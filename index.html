@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>영감노트 - 어린 왕자 에디션</title>
+    
+    <!-- 폰트: Pretendard Gov -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-gov.min.css" />
+    <!-- 아이콘: Remix Icon -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+
+    <style>
+        /* 🎨 디자인 토큰 및 테마 설정 */
+        :root { --font-main: 'Pretendard GOV', sans-serif; --radius: 16px; --trans: all 0.2s ease; }
+        
+        [data-theme="blue"] { --bg: #F0F4F8; --main: #7B9ACC; --sub: #E2EBF5; --text: #2C3E50; --card: #FFF; --grad: linear-gradient(135deg, #7B9ACC, #5A7AA0); }
+        [data-theme="green"] { --bg: #F1F8F5; --main: #8EBAA5; --sub: #E2EFE9; --text: #2D3E35; --card: #FFF; --grad: linear-gradient(135deg, #8EBAA5, #6E9A85); }
+        [data-theme="yellow"] { --bg: #FFFDF5; --main: #E6C27A; --sub: #FDF3DB; --text: #4A4036; --card: #FFF; --grad: linear-gradient(135deg, #E6C27A, #C6A25A); }
+        [data-theme="red"] { --bg: #FEF5F5; --main: #E09494; --sub: #FADBD8; --text: #4A2C2C; --card: #FFF; --grad: linear-gradient(135deg, #E09494, #C07474); }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: var(--font-main); background: var(--bg); color: var(--text); margin: 0; padding: 0; }
+        
+        /* 메인 컨테이너 */
+        .app-container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column;
+            padding-bottom: 120px; 
+            position: relative; 
+        }
+
+        /* 로딩 애니메이션 */
+        .loader-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 9999; display: none; justify-content: center; align-items: center; flex-direction: column; }
+        .loader { width: 45px; height: 45px; border: 4px solid #eee; border-top-color: var(--main); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* 헤더 */
+        header { padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+        .app-title { font-size: 1.5rem; font-weight: 800; color: var(--main); display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .header-actions { display: flex; gap: 12px; align-items: center; }
+        
+        /* 서버 상태 표시 */
+        #connectionStatus { font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 20px; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: currentColor; }
+        .status-error { color: #e74c3c; background: #fee; }
+        .status-ok { color: #2e7d32; background: #e8f5e9; }
+        .status-connecting { color: #f39c12; background: #fff8e1; }
+
+        .icon-btn { background: none; border: none; font-size: 1.4rem; color: #999; padding: 4px; cursor: pointer; transition: var(--trans); }
+        .icon-btn:hover { color: var(--main); transform: scale(1.1); }
+        .theme-select { padding: 6px 12px; border-radius: 20px; border: 1px solid var(--main); background: var(--card); color: var(--main); font-weight: 700; outline: none; cursor: pointer; }
+
+        #modeBanner { background: #FFF3CD; color: #856404; padding: 14px; text-align: center; font-size: 0.9rem; font-weight: 600; display: none; cursor: pointer; }
+
+        /* 🔍 검색창 (아이콘 정렬 수정) */
+        .search-area { padding: 0 24px 15px; flex-shrink: 0; }
+        .search-wrapper { position: relative; display: flex; align-items: center; width: 100%; }
+        .search-input { width: 100%; padding: 14px 20px 14px 45px; border-radius: 24px; border: none; background: var(--card); box-shadow: 0 4px 15px rgba(0,0,0,0.04); font-size: 1rem; outline: none; transition: var(--trans); }
+        .search-input:focus { box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .search-icon { position: absolute; left: 16px; color: var(--main); font-size: 1.2rem; pointer-events: none; display: flex; align-items: center; height: 100%; top: 0; }
+
+        /* 📊 대시보드 */
+        .dashboard-area { padding: 5px 24px 20px; flex-shrink: 0; }
+        .dashboard-card {
+            background: var(--grad); border-radius: 20px; padding: 20px 24px; color: white;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15); display: flex; justify-content: space-between; align-items: center;
+            position: relative; overflow: hidden; gap: 15px;
+        }
+        .dash-main { z-index: 1; }
+        .dash-label { font-size: 0.9rem; font-weight: 600; opacity: 0.9; }
+        .dash-total { font-size: 2.2rem; font-weight: 800; line-height: 1.2; }
+        .dash-right { z-index: 1; display: flex; gap: 15px; text-align: center; }
+        .dash-stat-item { display: flex; flex-direction: column; align-items: center; }
+        .dash-stat-label { font-size: 0.7rem; opacity: 0.8; margin-bottom: 2px; }
+        .dash-stat-val { font-size: 1.1rem; font-weight: 700; }
+
+        /* 탭 & 필터 */
+        .tabs-area { padding: 0 24px 15px; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; flex-shrink: 0; }
+        .tab-btn { flex: 1; padding: 10px; text-align: center; border-radius: 20px; background: rgba(255,255,255,0.6); color: #888; font-weight: 700; font-size: 0.95rem; border: none; cursor: pointer; transition: var(--trans); white-space: nowrap; }
+        .tab-btn.active { background: var(--main); color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+
+        .folders-section { padding: 0 24px 10px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+        .folder-manage-btn { 
+            display: inline-flex; align-items: center; gap: 6px; padding: 10px 14px; border-radius: 14px;
+            background: var(--main); color: white; font-size: 0.85rem; font-weight: 700; border: none; cursor: pointer;
+            transition: var(--trans); white-space: nowrap;
+        }
+        .folders-list { display: flex; overflow-x: auto; scrollbar-width: none; gap: 8px; }
+        .folder-chip { 
+            display: inline-flex; align-items: center; padding: 10px 16px; border-radius: 14px;
+            background: var(--card); border: 1px solid var(--sub); color: #666;
+            font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: var(--trans);
+        }
+        .folder-chip.active { background: var(--sub); color: var(--main); border-color: var(--main); font-weight: 700; }
+
+        /* 툴바 */
+        .toolbar { padding: 10px 24px 20px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+        .view-opts { display: flex; background: var(--card); border-radius: 12px; padding: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+        .view-opts button { border: none; padding: 6px 10px; border-radius: 8px; background: transparent; color: #999; cursor: pointer; font-size: 1.1rem; }
+        .view-opts button.active { background: var(--sub); color: var(--main); }
+        .sort-select { padding: 8px 12px; border-radius: 10px; border: 1px solid var(--sub); background: var(--card); color: #555; font-size: 0.85rem; outline: none; cursor: pointer; }
+
+        /* 카드 및 목록 영역 */
+        .content-area { 
+            padding: 0 24px; 
+            flex-grow: 1; 
+            display: flex; 
+            flex-direction: column;
+            position: relative;
+        }
+        .grid-view { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .card {
+            background: var(--card); border-radius: 20px; padding: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04); transition: var(--trans); cursor: pointer;
+            border: 1px solid transparent; display: flex; flex-direction: column;
+            height: 100%; position: relative;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.08); }
+        .card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--main); opacity: 0.8; }
+        
+        .card-meta { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 0.8rem; color: #888; align-items: center; }
+        .badge { padding: 4px 8px; border-radius: 6px; font-weight: 800; font-size: 0.65rem; margin-right: 4px; }
+        .badge-cat { background: var(--main); color: white; }
+        .badge-folder { background: var(--sub); color: var(--main); }
+        
+        .card-title { font-size: 1.15rem; font-weight: 700; color: var(--text); margin-bottom: 10px; line-height: 1.4; }
+        .card-content { font-size: 0.95rem; line-height: 1.6; color: #555; margin-bottom: 15px; white-space: pre-wrap; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; flex-grow: 1; }
+        
+        .card-preview { width: 100%; height: 160px; border-radius: 12px; margin-bottom: 15px; background: #f8f9fa; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 1px solid #eee; }
+        .card-preview img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .card-actions { margin-top: 15px; padding-top: 15px; border-top: 1px solid #f0f0f0; display: flex; justify-content: flex-end; gap: 10px; }
+        .action-btn { background: #f5f5f5; border: none; width: 36px; height: 36px; border-radius: 50%; color: #777; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--trans); }
+        .action-btn:hover { background: var(--sub); color: var(--main); }
+        .action-btn.del:hover { background: #fee; color: #e74c3c; }
+
+        /* 🔥 빈 상태 (페이지 중앙 정렬 로직 강화) */
+        .empty-msg { 
+            flex-grow: 1; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            text-align: center; 
+            color: #aaa; 
+            width: 100%;
+            height: 100%;
+            /* 부모가 그리드인 경우를 대비해 첫 번째 열에서 전체 너비 차지 */
+            grid-column: 1 / -1; 
+        }
+        .empty-msg i { font-size: 4.5rem; margin-bottom: 20px; color: var(--main); opacity: 0.4; }
+        .empty-msg p { font-size: 1.1rem; font-weight: 600; margin: 0; }
+
+        /* 모달 및 UI 요소 */
+        .modal-wrap { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
+        .modal-box { background: var(--card); width: 90%; max-width: 480px; border-radius: 24px; padding: 30px; max-height: 90vh; overflow-y: auto; animation: popIn 0.2s ease; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
+        .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .modal-title { font-size: 1.3rem; font-weight: 800; display: flex; align-items: center; gap: 10px; color: var(--text); }
+        .close-btn { background: none; border: none; font-size: 1.6rem; color: #999; cursor: pointer; }
+        .form-group { margin-bottom: 18px; }
+        .form-label { display: block; font-size: 0.9rem; font-weight: 700; color: #666; margin-bottom: 8px; }
+        .form-input { width: 100%; padding: 14px; border-radius: 14px; border: 1px solid var(--sub); background: var(--bg); font-size: 1rem; outline: none; font-family: var(--font-main); }
+        textarea.form-input { height: 120px; resize: none; line-height: 1.5; }
+        .full-btn { width: 100%; padding: 16px; border-radius: 16px; background: var(--main); color: white; border: none; font-size: 1.1rem; font-weight: 700; cursor: pointer; margin-top: 10px; }
+        
+        .manage-folder-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: var(--bg); border-radius: 14px; margin-bottom: 10px; }
+        .folder-del-btn { color: #e74c3c; cursor: pointer; padding: 4px; font-size: 1.4rem; transition: transform 0.2s; }
+
+        .toast-container { position: fixed; bottom: 110px; left: 50%; transform: translateX(-50%); z-index: 2000; width: 90%; max-width: 400px; pointer-events: none; }
+        .toast { pointer-events: auto; background: rgba(33, 37, 41, 0.95); color: white; padding: 16px 24px; border-radius: 50px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: slideUp 0.3s ease; backdrop-filter: blur(4px); }
+        .undo-btn { color: #FFD700; font-weight: 700; cursor: pointer; font-size: 0.95rem; background: none; border: none; text-decoration: underline; }
+
+        .fab { position: fixed; bottom: 40px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: var(--main); color: white; border: none; font-size: 26px; box-shadow: 0 6px 20px rgba(0,0,0,0.25); cursor: pointer; z-index: 100; display: flex; align-items: center; justify-content: center; }
+
+        @keyframes popIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { transform: translate(-50%, 20px); } to { opacity: 1; transform: translate(-50%, 0); } }
+    </style>
+</head>
+<body>
+
+<div class="loader-overlay" id="loader">
+    <div class="loader"></div>
+    <div id="loaderText" style="font-weight:700; color:#555;">동기화 중...</div>
+</div>
+
+<div class="app-container">
+    <header>
+        <div class="header-left">
+            <h1 class="app-title" onclick="location.reload()"><i class="ri-seedling-fill"></i> 영감노트</h1>
+        </div>
+        <div class="header-actions">
+            <div id="connectionStatus"><span class="status-dot"></span> <span>대기 중</span></div>
+            <button class="icon-btn" onclick="openModal('settingsModal')" title="설정"><i class="ri-settings-4-line"></i></button>
+            <select class="theme-select" id="themeSelector">
+                <option value="blue">블루</option>
+                <option value="green">그린</option>
+                <option value="yellow">옐로우</option>
+                <option value="red">레드</option>
+            </select>
+        </div>
+    </header>
+
+    <div id="modeBanner" onclick="openModal('settingsModal')">⚠️ 연동 정보가 부족합니다. 설정에서 URL과 액세스 키를 입력하세요.</div>
+
+    <div class="search-area" id="searchContainer">
+        <div class="search-wrapper">
+            <div class="search-icon">
+                <i class="ri-search-line"></i>
+            </div>
+            <input type="text" class="search-input" id="searchInput" placeholder="검색어 또는 #해시태그">
+        </div>
+    </div>
+
+    <div class="dashboard-area" id="dashboardArea">
+        <div class="dashboard-card">
+            <div class="dash-left">
+                <span class="dash-label">Total Seeds</span>
+                <div class="dash-total" id="dashTotal">0</div>
+            </div>
+            <div class="dash-right">
+                <div class="dash-stat-item"><span class="dash-stat-label">TEXT</span><span class="dash-stat-val" id="dashText">0</span></div>
+                <div class="dash-stat-item"><span class="dash-stat-label">LIFE</span><span class="dash-stat-val" id="dashLife">0</span></div>
+                <div class="dash-stat-item"><span class="dash-stat-label">ART</span><span class="dash-stat-val" id="dashArt">0</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tabs-area" id="tabsContainer">
+        <button class="tab-btn active" onclick="setCategory('all')">전체</button>
+        <button class="tab-btn" onclick="setCategory('text')">문장/단어</button>
+        <button class="tab-btn" onclick="setCategory('daily')">일상</button>
+        <button class="tab-btn" onclick="setCategory('art')">예술/교육</button>
+    </div>
+
+    <div class="folders-section">
+        <button class="folder-manage-btn" onclick="openFolderManage()">
+            <i class="ri-folder-settings-fill"></i> 폴더관리
+        </button>
+        <div class="folders-list" id="foldersContainer"></div>
+    </div>
+
+    <div class="toolbar">
+        <div class="view-opts">
+            <button class="active" id="btnViewGrid" onclick="setViewMode('grid')" title="카드형"><i class="ri-grid-fill"></i></button>
+            <button id="btnViewList" onclick="setViewMode('list')" title="리스트형"><i class="ri-list-check"></i></button>
+        </div>
+        <select class="sort-select" id="sortSelector" onchange="setSortMode(this.value)">
+            <option value="date-desc">최신순</option>
+            <option value="date-asc">오래된순</option>
+            <option value="title-asc">가나다순</option>
+        </select>
+    </div>
+
+    <div class="content-area" id="mainContent"></div>
+    
+    <button class="fab" id="fabBtn" onclick="openModal('writeModal')"><i class="ri-edit-2-fill"></i></button>
+</div>
+
+<div id="toastContainer" class="toast-container"></div>
+
+<!-- 폴더 관리 모달 -->
+<div class="modal-wrap" id="folderManageModal">
+    <div class="modal-box">
+        <div class="modal-head">
+            <span class="modal-title"><i class="ri-folder-settings-line"></i> 폴더 관리</span>
+            <button class="close-btn" onclick="closeModal('folderManageModal')"><i class="ri-close-line"></i></button>
+        </div>
+        <div class="form-group">
+            <label class="form-label">새 폴더 추가</label>
+            <div style="display:flex; gap:8px;">
+                <input type="text" class="form-input" id="newFolderName" placeholder="이름 입력">
+                <button class="folder-manage-btn" style="padding:0 20px" onclick="addFolder()">추가</button>
+            </div>
+        </div>
+        <label class="form-label">기존 폴더 목록</label>
+        <div id="manageFolderList"></div>
+    </div>
+</div>
+
+<!-- 폴더 삭제 시 선택 모달 -->
+<div class="modal-wrap" id="folderDeleteChoiceModal">
+    <div class="modal-box">
+        <div class="modal-head">
+            <span class="modal-title"><i class="ri-alert-fill" style="color:#e74c3c"></i> 삭제 확인</span>
+            <button class="close-btn" onclick="closeModal('folderDeleteChoiceModal')"><i class="ri-close-line"></i></button>
+        </div>
+        <p id="deleteChoiceText" style="line-height:1.6; color:#555;"></p>
+        <div class="choice-btns">
+            <button class="choice-btn" id="btnMoveToUnassigned">
+                <i class="ri-folder-shared-line"></i>
+                <span>메모를 [기타]로 옮기고 폴더만 삭제</span>
+            </button>
+            <button class="choice-btn" id="btnDeleteAllNotes" style="color:#e74c3c;">
+                <i class="ri-delete-bin-2-line"></i>
+                <span>내부 메모까지 모두 영구 삭제</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 작성/수정 모달 -->
+<div class="modal-wrap" id="writeModal">
+    <div class="modal-box">
+        <div class="modal-head">
+            <span class="modal-title" id="modalTitle">새로운 영감 심기 🌱</span>
+            <button class="close-btn" onclick="closeModal('writeModal')"><i class="ri-close-line"></i></button>
+        </div>
+        <input type="hidden" id="editNoteId">
+        <div class="form-group">
+            <label class="form-label">카테고리</label>
+            <select class="form-input" id="inputCategory">
+                <option value="text">문장/단어</option>
+                <option value="daily">일상</option>
+                <option value="art">예술/교육</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">폴더</label>
+            <select class="form-input" id="folderSelect"></select>
+        </div>
+        <div class="form-group"><label class="form-label">제목 / 출처</label><input type="text" class="form-input" id="inputTitle"></div>
+        <div class="form-group"><label class="form-label">내용</label><textarea class="form-input" id="inputContent"></textarea></div>
+        <div class="form-group"><label class="form-label">링크</label><input type="url" class="form-input" id="inputLink" placeholder="https://..."></div>
+        <div class="form-group">
+            <label class="form-label">이미지 첨부</label>
+            <input type="file" id="inputFile" accept="image/*" class="form-input" onchange="handleFileSelect(this)">
+            <img id="uploadPreview" class="file-preview">
+        </div>
+        <div class="form-group"><label class="form-label">해시태그</label><input type="text" class="form-input" id="inputTags" placeholder="#태그1 #태그2"></div>
+        <button class="full-btn" onclick="saveNote()">저장하기</button>
+    </div>
+</div>
+
+<!-- 상세 보기 모달 -->
+<div class="modal-wrap" id="detailModal">
+    <div class="modal-box">
+        <div class="modal-head">
+            <span class="modal-title">상세 보기</span>
+            <button class="close-btn" onclick="closeModal('detailModal')"><i class="ri-close-line"></i></button>
+        </div>
+        <div id="detailContent"></div>
+    </div>
+</div>
+
+<!-- 서버 연동 모달 -->
+<div class="modal-wrap" id="settingsModal">
+    <div class="modal-box">
+        <div class="modal-head">
+            <span class="modal-title">🔒 보안 및 서버 설정</span>
+            <button class="close-btn" onclick="closeModal('settingsModal')"><i class="ri-close-line"></i></button>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Google 웹 앱 URL</label>
+            <input type="text" class="form-input" id="settingUrlInput" placeholder="https://script.google.com/...">
+        </div>
+        <div class="form-group">
+            <label class="form-label">액세스 키 (설정한 비밀번호)</label>
+            <input type="password" class="form-input" id="settingKeyInput" placeholder="암호를 입력하세요">
+        </div>
+        <button class="full-btn" onclick="saveSettings()">저장 및 연동하기</button>
+    </div>
+</div>
+
+<script>
+    // --- 설정 및 상태 ---
+    let webAppUrl = localStorage.getItem('inspirationNote_Url') || "https://script.google.com/macros/s/AKfycbw2ES5Et-sG4mgHKNEiNVISLdtuk-vSWqmAjszGsN5y_t3szT-cL44iCOEqegK4FQgy/exec"; 
+    let accessKey = localStorage.getItem('inspirationNote_Key') || "1234";
+    let isDemoMode = !webAppUrl || !accessKey;
+    
+    let notes = [];
+    let undoStack = [];
+    let customFolders = JSON.parse(localStorage.getItem('inspirationFolders')) || ["아이디어", "뮤지컬", "독서", "기획"];
+    let viewState = { cat: 'all', folder: 'all', mode: 'grid', sort: 'date-desc', search: '' };
+    let tempFile = null;
+
+    const catMap = { 'text': 'TEXT', 'daily': 'LIFE', 'art': 'ART&EDU' };
+    const catName = { 'text': '문장/단어', 'daily': '일상', 'art': '예술/교육' };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initApp();
+        document.getElementById('searchInput').addEventListener('input', (e) => { viewState.search = e.target.value; refreshUI(); });
+        document.getElementById('themeSelector').addEventListener('change', (e) => setTheme(e.target.value));
+    });
+
+    function initApp() {
+        const t = localStorage.getItem('theme') || 'blue';
+        document.documentElement.setAttribute('data-theme', t);
+        document.getElementById('themeSelector').value = t;
+        document.getElementById('modeBanner').style.display = isDemoMode ? 'block' : 'none';
+        
+        const cached = localStorage.getItem('notes_cache');
+        if(cached) { notes = JSON.parse(cached); refreshUI(); }
+        
+        if (!isDemoMode) fetchNotes();
+        else updateStatusUI('error', '연결 안 됨');
+        
+        renderFolders();
+    }
+
+    function setTheme(t) { document.documentElement.setAttribute('data-theme', t); localStorage.setItem('theme', t); }
+
+    function updateStatusUI(type, text) {
+        const el = document.getElementById('connectionStatus');
+        if (!el) return;
+        el.className = `status-${type}`;
+        el.querySelector('span:last-child').innerText = text || (type === 'ok' ? '연결됨' : type === 'connecting' ? '연결 중' : '오류');
+    }
+
+    async function fetchNotes() {
+        updateStatusUI('connecting');
+        try {
+            const res = await fetch(`${webAppUrl}?action=read&key=${accessKey}`);
+            const json = await res.json();
+            if (json.status === "success") {
+                notes = json.data.map(n => ({
+                    ...n, id: String(n.id),
+                    tags: typeof n.tags === 'string' ? n.tags.split(',').filter(t=>t) : (n.tags || []),
+                    deleted_at: null
+                }));
+                localStorage.setItem('notes_cache', JSON.stringify(notes));
+                updateStatusUI('ok');
+                document.getElementById('modeBanner').style.display = 'none';
+                refreshUI();
+            } else { throw new Error(json.message); }
+        } catch (e) {
+            updateStatusUI('error');
+            document.getElementById('modeBanner').style.display = 'block';
+        }
+    }
+
+    async function postData(data) {
+        if (isDemoMode) return;
+        return fetch(webAppUrl, { 
+            method: 'POST', mode: 'no-cors', 
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify({ ...data, key: accessKey }) 
+        });
+    }
+
+    async function saveNote() {
+        const title = document.getElementById('inputTitle').value;
+        const folder = document.getElementById('folderSelect').value;
+        if (!title) return alert('제목을 입력해주세요.');
+
+        const editId = document.getElementById('editNoteId').value;
+        const now = Date.now();
+        const note = {
+            id: editId ? editId : String(now),
+            category: document.getElementById('inputCategory').value,
+            folder: folder || '기타',
+            title: title,
+            content: document.getElementById('inputContent').value,
+            link: document.getElementById('inputLink').value,
+            tags: document.getElementById('inputTags').value.split(' ').filter(t=>t).map(t=>t.startsWith('#')?t:'#'+t),
+            date: new Date().toLocaleDateString(),
+            created_at: editId ? notes.find(n=>n.id===editId).created_at : now,
+            deleted_at: null,
+            file_url: tempFile ? tempFile.data : (editId ? notes.find(n=>n.id===editId).file_url : null)
+        };
+
+        if (editId) { notes = notes.map(n => n.id === editId ? note : n); } 
+        else { notes.unshift(note); }
+        
+        localStorage.setItem('notes_cache', JSON.stringify(notes));
+        closeModal('writeModal');
+        refreshUI();
+
+        try {
+            if (editId) await postData({ action: 'delete', id: editId });
+            await postData({ ...note, file: tempFile, action: 'create' });
+            if(!isDemoMode) setTimeout(fetchNotes, 1500);
+        } catch (e) { console.error(e); }
+    }
+
+    function deleteNote(id) {
+        const idx = notes.findIndex(n => n.id == id);
+        if (idx === -1) return;
+        const deletedNote = notes[idx];
+        notes.splice(idx, 1);
+        localStorage.setItem('notes_cache', JSON.stringify(notes));
+        refreshUI();
+
+        const undoId = Date.now();
+        const timer = setTimeout(async () => {
+            await postData({ action: 'delete', id: String(id) });
+            undoStack = undoStack.filter(item => item.undoId !== undoId);
+        }, 5000);
+        undoStack.push({ undoId, note: deletedNote, timer });
+        showUndoToast(undoId);
+    }
+
+    function showUndoToast(undoId) {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.id = `toast-${undoId}`;
+        toast.innerHTML = `<span>영감을 삭제했습니다.</span><button class="undo-btn" onclick="undoAction(${undoId})">되돌리기</button>`;
+        container.appendChild(toast);
+        setTimeout(() => { if(toast.parentNode) toast.remove(); }, 5000);
+    }
+
+    function undoAction(undoId) {
+        const idx = undoStack.findIndex(i => i.undoId === undoId);
+        if (idx === -1) return;
+        const { note, timer } = undoStack[idx];
+        clearTimeout(timer);
+        notes.unshift(note);
+        localStorage.setItem('notes_cache', JSON.stringify(notes));
+        refreshUI();
+        const el = document.getElementById(`toast-${undoId}`);
+        if (el) el.remove();
+        undoStack.splice(idx, 1);
+    }
+
+    function openFolderManage() { renderManageFolders(); openModal('folderManageModal'); }
+    function renderManageFolders() {
+        const list = document.getElementById('manageFolderList');
+        list.innerHTML = customFolders.map(f => `<div class="manage-folder-item"><span class="folder-del-btn" onclick="requestRemoveFolder('${f}')"><i class="ri-close-circle-fill"></i></span><span style="font-weight:700">${f}</span><span></span></div>`).join('');
+    }
+    function addFolder() {
+        const name = document.getElementById('newFolderName').value.trim();
+        if (name && !customFolders.includes(name)) {
+            customFolders.push(name);
+            saveFolders();
+            document.getElementById('newFolderName').value = '';
+            renderManageFolders(); renderFolders();
+        }
+    }
+    function requestRemoveFolder(name) {
+        const notesInFolder = notes.filter(n => n.folder === name);
+        if (notesInFolder.length === 0) {
+            confirmRemoveFolder(name, 'only-folder');
+            return;
+        }
+        document.getElementById('deleteChoiceText').innerHTML = `<b>[${name}]</b> 폴더에 <b>${notesInFolder.length}개</b>의 영감이 있습니다.`;
+        document.getElementById('folderDeleteChoiceModal').style.display = 'flex';
+        document.getElementById('btnMoveToUnassigned').onclick = () => confirmRemoveFolder(name, 'move');
+        document.getElementById('btnDeleteAllNotes').onclick = () => confirmRemoveFolder(name, 'all');
+    }
+    async function confirmRemoveFolder(name, mode) {
+        if (mode === 'move') {
+            notes = notes.map(n => n.folder === name ? {...n, folder: '기타'} : n);
+        } else if (mode === 'all') {
+            const idsToDelete = notes.filter(n => n.folder === name).map(n => n.id);
+            notes = notes.filter(n => n.folder !== name);
+            if(!isDemoMode) idsToDelete.forEach(id => postToAppsScript({ action: 'delete', id: String(id) }));
+        }
+        customFolders = customFolders.filter(f => f !== name);
+        if(viewState.folder === name) viewState.folder = 'all';
+        saveFolders(); localStorage.setItem('notes_cache', JSON.stringify(notes));
+        closeModal('folderDeleteChoiceModal');
+        renderManageFolders(); renderFolders(); refreshUI();
+    }
+    function renderFolders() {
+        const con = document.getElementById('foldersContainer');
+        con.innerHTML = '';
+        const allBtn = document.createElement('span');
+        allBtn.className = `folder-chip ${viewState.folder === 'all' ? 'active' : ''}`;
+        allBtn.innerText = '전체';
+        allBtn.onclick = () => { viewState.folder = 'all'; renderFolders(); refreshUI(); };
+        con.appendChild(allBtn);
+        customFolders.forEach(f => {
+            const chip = document.createElement('span');
+            chip.className = `folder-chip ${viewState.folder === f ? 'active' : ''}`;
+            chip.innerText = f;
+            chip.onclick = () => { viewState.folder = f; renderFolders(); refreshUI(); };
+            con.appendChild(chip);
+        });
+    }
+    function saveFolders() { localStorage.setItem('inspirationFolders', JSON.stringify(customFolders)); }
+
+    // --- UI 렌더링 ---
+    function refreshUI() {
+        const container = document.getElementById('mainContent');
+        if (!container) return;
+        container.innerHTML = '';
+
+        let list = notes.filter(n => {
+            const matchCat = viewState.cat === 'all' || n.category === viewState.cat;
+            const matchFolder = viewState.folder === 'all' || n.folder === viewState.folder;
+            const term = viewState.search.toLowerCase();
+            return matchCat && matchFolder && (!viewState.search || n.title.toLowerCase().includes(term) || (n.tags||[]).join(' ').toLowerCase().includes(term));
+        });
+
+        list.sort((a, b) => {
+            if (viewState.sort === 'date-desc') return b.id - a.id;
+            if (viewState.sort === 'title-asc') return a.title.localeCompare(b.title);
+            return a.id - b.id;
+        });
+
+        if (list.length === 0) {
+            // 🔥 그리드 스타일을 일시적으로 제거하여 중앙 정렬 보장
+            container.className = 'content-area';
+            container.innerHTML = `
+                <div class="empty-msg">
+                    <i class="ri-seedling-line"></i>
+                    <p>표시할 영감이 없습니다.</p>
+                </div>
+            `;
+        } else {
+            container.className = viewState.mode === 'grid' ? 'content-area grid-view' : 'content-area list-view';
+            list.forEach(note => {
+                const el = document.createElement('div');
+                const engCat = catMap[note.category] || 'ETC';
+                const tagsHTML = (note.tags || []).map(t => `<span class="tag">${t}</span>`).join('');
+                let preview = note.file_url ? `<div class="card-preview"><img src="${note.file_url}"></div>` : '';
+
+                if (viewState.mode === 'grid') {
+                    el.className = 'card';
+                    el.innerHTML = `<div class="card-meta"><div class="card-badges"><span class="badge badge-cat">${engCat}</span><span class="badge badge-folder">${note.folder}</span></div><span>${note.date}</span></div><div class="card-title">${note.title}</div><div class="card-content">${note.content}</div>${preview}<div class="card-tags">${tagsHTML}</div><div class="card-actions" onclick="event.stopPropagation()"><button class="action-btn" onclick="openEditModal('${note.id}')"><i class="ri-edit-line"></i></button><button class="action-btn del" onclick="deleteNote('${note.id}')"><i class="ri-delete-bin-line"></i></button></div>`;
+                } else {
+                    el.className = 'list-item';
+                    el.innerHTML = `<div class="list-info"><div class="list-title">${note.title}</div><div class="list-sub"><span style="color:var(--main);font-weight:800">${engCat}</span> · <span>${note.folder}</span> · <span>${note.date}</span></div></div><div class="list-actions" onclick="event.stopPropagation()"><button class="action-btn" onclick="openEditModal('${note.id}')"><i class="ri-edit-line"></i></button><button class="action-btn del" onclick="deleteNote('${note.id}')"><i class="ri-delete-bin-line"></i></button></div>`;
+                }
+                el.onclick = () => openDetail(note);
+                container.appendChild(el);
+            });
+        }
+        updateDashboard();
+    }
+
+    function updateDashboard() {
+        document.getElementById('dashTotal').innerText = notes.length;
+        document.getElementById('dashText').innerText = notes.filter(n => n.category === 'text').length;
+        document.getElementById('dashLife').innerText = notes.filter(n => n.category === 'daily').length;
+        document.getElementById('dashArt').innerText = notes.filter(n => n.category === 'art').length;
+    }
+
+    function openModal(id) {
+        document.getElementById(id).style.display = 'flex';
+        if (id === 'writeModal') {
+            const sel = document.getElementById('folderSelect');
+            sel.innerHTML = customFolders.map(f => `<option value="${f}">${f}</option>`).join('') + '<option value="기타">기타</option>';
+            document.getElementById('modalTitle').innerText = "새로운 영감 심기 🌱";
+            document.getElementById('editNoteId').value = "";
+            document.querySelectorAll('#writeModal .form-input').forEach(i => i.value = "");
+            document.getElementById('uploadPreview').style.display = 'none';
+            tempFile = null;
+        }
+        if (id === 'settingsModal') {
+            document.getElementById('settingUrlInput').value = webAppUrl;
+            document.getElementById('settingKeyInput').value = accessKey;
+        }
+    }
+    function openEditModal(id) {
+        const note = notes.find(n => n.id === id);
+        openModal('writeModal');
+        document.getElementById('modalTitle').innerText = "영감 수정 ✏️";
+        document.getElementById('editNoteId').value = id;
+        document.getElementById('inputCategory').value = note.category;
+        document.getElementById('folderSelect').value = note.folder;
+        document.getElementById('inputTitle').value = note.title;
+        document.getElementById('inputContent').value = note.content;
+        document.getElementById('inputLink').value = note.link;
+        document.getElementById('inputTags').value = note.tags.join(' ');
+        if (note.file_url) { document.getElementById('uploadPreview').src = note.file_url; document.getElementById('uploadPreview').style.display = 'block'; }
+    }
+    function handleFileSelect(input) {
+        const file = input.files[0]; if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => { tempFile = { name: file.name, type: file.type, data: e.target.result }; document.getElementById('uploadPreview').src = e.target.result; document.getElementById('uploadPreview').style.display = 'block'; };
+        reader.readAsDataURL(file);
+    }
+    function openDetail(note) {
+        const c = document.getElementById('detailContent');
+        let media = note.file_url ? `<div class="detail-media"><img src="${note.file_url}"></div>` : '';
+        c.innerHTML = `<div class="detail-meta"><span class="detail-badge">${catName[note.category]}</span><span>${note.folder}</span> · <span>${note.date}</span></div><h2 class="detail-title">${note.title}</h2><div class="detail-content">${note.content}</div>${media}<div class="detail-tags">${note.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div><button class="full-btn" style="background:#eee; color:#333; margin-top:20px;" onclick="closeModal('detailModal'); openEditModal('${note.id}')">수정하기</button>`;
+        document.getElementById('detailModal').style.display = 'flex';
+    }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    function setCategory(c) { viewState.cat = c; document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.innerText.includes(catName[c]) || (c==='all' && b.innerText==='전체'))); refreshUI(); }
+    function setViewMode(m) { viewState.mode = m; document.getElementById('btnViewGrid').classList.toggle('active', m==='grid'); document.getElementById('btnViewList').classList.toggle('active', m==='list'); refreshUI(); }
+    function setSortMode(s) { viewState.sort = s; refreshUI(); }
+    function showLoader(show, text) { document.getElementById('loader').style.display = show ? 'flex' : 'none'; if(text) document.getElementById('loaderText').innerText = text; }
+    function saveSettings() {
+        localStorage.setItem('inspirationNote_Url', document.getElementById('settingUrlInput').value.trim());
+        localStorage.setItem('inspirationNote_Key', document.getElementById('settingKeyInput').value.trim());
+        location.reload();
+    }
+</script>
+
+</body>
+</html>
