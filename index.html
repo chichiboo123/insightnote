@@ -693,11 +693,18 @@
         }
     }
 
-    function deleteNote(id) {
-        if(!confirm("삭제하시겠습니까?")) return;
-        notes = notes.filter(n => n.id !== id);
+    async function deleteNote(id) {
+        if(!confirm("영구 삭제하시겠습니까?")) return;
+        const targetId = String(id);
+        notes = notes.filter(n => n.id !== targetId);
         saveToCache(notes); refreshUI();
-        if(!isOfflineMode) fetch(webAppUrl, { method: 'POST', body: JSON.stringify({ action: 'delete', id: id, key: accessKey }), headers: { 'Content-Type': 'text/plain' } });
+        if(!isOfflineMode && webAppUrl) {
+            try {
+                const res = await fetch(webAppUrl, { method: 'POST', body: JSON.stringify({ action: 'delete', id: targetId, key: accessKey }), headers: { 'Content-Type': 'text/plain' }, redirect: 'follow' });
+                const json = await res.json();
+                if(json.status === 'success') showToast('서버에서 삭제되었습니다.');
+            } catch(e) { showToast('서버 삭제 중 오류 발생'); }
+        }
     }
 
     function setViewMode(m) { 
