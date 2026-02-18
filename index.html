@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>영감노트 by.chichiboo</title>
+    <title>영감노트 by. chichiboo</title>
     
     <!-- 폰트: Pretendard Gov -->
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-gov.min.css" />
@@ -22,7 +22,6 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: var(--font-main); background: var(--bg); color: var(--text); margin: 0; padding: 0; transition: background 0.3s ease; }
         
-        /* 메인 컨테이너 */
         .app-container { 
             max-width: 800px; 
             margin: 0 auto; 
@@ -33,17 +32,14 @@
             position: relative; 
         }
 
-        /* 로딩 애니메이션 */
         .loader-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 9999; display: none; justify-content: center; align-items: center; flex-direction: column; }
         .loader { width: 45px; height: 45px; border: 4px solid #eee; border-top-color: var(--main); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* 헤더 */
         header { padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
         .app-title { font-size: 1.5rem; font-weight: 800; color: var(--main); display: flex; align-items: center; gap: 8px; cursor: pointer; }
         .header-actions { display: flex; gap: 12px; align-items: center; }
         
-        /* 서버 상태 표시 */
         #connectionStatus { font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 20px; background: rgba(255,255,255,0.5); cursor: pointer; }
         .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: currentColor; }
         .status-error { color: #e74c3c; background: #fee; }
@@ -55,134 +51,65 @@
         .icon-btn:hover { color: var(--main); transform: scale(1.1); }
         .theme-select { padding: 6px 12px; border-radius: 20px; border: 1px solid var(--main); background: var(--card); color: var(--main); font-weight: 700; outline: none; cursor: pointer; }
 
-        /* 🔍 검색창 */
         .search-area { padding: 0 24px 15px; flex-shrink: 0; }
         .search-wrapper { position: relative; display: flex; align-items: center; width: 100%; }
+        /* autocomplete="off"를 추가하여 URL 자동 완성을 방지함 */
         .search-input { width: 100%; padding: 14px 20px 14px 45px; border-radius: 24px; border: none; background: var(--card); box-shadow: 0 4px 15px rgba(0,0,0,0.04); font-size: 1rem; outline: none; transition: var(--trans); }
         .search-input:focus { box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
         .search-icon { position: absolute; left: 16px; color: var(--main); font-size: 1.2rem; pointer-events: none; display: flex; align-items: center; height: 100%; top: 0; }
 
-        /* 📊 대시보드 */
         .dashboard-area { padding: 5px 24px 20px; flex-shrink: 0; }
-        .dashboard-card {
-            background: var(--grad); border-radius: 20px; padding: 20px 24px; color: white;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15); display: flex; justify-content: space-between; align-items: center;
-            position: relative; overflow: hidden; gap: 15px;
-        }
-        .dash-main { z-index: 1; }
-        .dash-label { font-size: 0.9rem; font-weight: 600; opacity: 0.9; }
+        .dashboard-card { background: var(--grad); border-radius: 20px; padding: 20px 24px; color: white; box-shadow: 0 8px 25px rgba(0,0,0,0.15); display: flex; justify-content: space-between; align-items: center; position: relative; overflow: hidden; gap: 15px; }
         .dash-total { font-size: 2.2rem; font-weight: 800; line-height: 1.2; }
-        .dash-right { z-index: 1; display: flex; gap: 15px; text-align: center; }
         .dash-stat-item { display: flex; flex-direction: column; align-items: center; }
         .dash-stat-label { font-size: 0.7rem; opacity: 0.8; margin-bottom: 2px; }
         .dash-stat-val { font-size: 1.1rem; font-weight: 700; }
 
-        /* 탭 & 필터 */
         .tabs-area { padding: 0 24px 15px; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; flex-shrink: 0; }
         .tab-btn { flex: 1; padding: 10px; text-align: center; border-radius: 20px; background: rgba(255,255,255,0.6); color: #888; font-weight: 700; font-size: 0.95rem; border: none; cursor: pointer; transition: var(--trans); white-space: nowrap; }
         .tab-btn.active { background: var(--main); color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
 
         .folders-section { padding: 0 24px 10px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-        .folder-manage-btn { 
-            display: inline-flex; align-items: center; gap: 6px; padding: 10px 14px; border-radius: 14px;
-            background: var(--main); color: white; font-size: 0.85rem; font-weight: 700; border: none; cursor: pointer;
-            transition: var(--trans); white-space: nowrap;
-        }
+        .folder-manage-btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 14px; border-radius: 14px; background: var(--main); color: white; font-size: 0.85rem; font-weight: 700; border: none; cursor: pointer; transition: var(--trans); white-space: nowrap; }
         .folders-list { display: flex; overflow-x: auto; scrollbar-width: none; gap: 8px; }
-        .folder-chip { 
-            display: inline-flex; align-items: center; padding: 10px 16px; border-radius: 14px;
-            background: var(--card); border: 1px solid var(--sub); color: #666;
-            font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: var(--trans);
-        }
+        .folder-chip { display: inline-flex; align-items: center; padding: 10px 16px; border-radius: 14px; background: var(--card); border: 1px solid var(--sub); color: #666; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: var(--trans); }
         .folder-chip.active { background: var(--sub); color: var(--main); border-color: var(--main); font-weight: 700; }
 
-        /* 툴바 */
         .toolbar { padding: 10px 24px 20px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
         .view-opts { display: flex; background: var(--card); border-radius: 12px; padding: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
         .view-opts button { border: none; padding: 6px 10px; border-radius: 8px; background: transparent; color: #999; cursor: pointer; font-size: 1.1rem; }
         .view-opts button.active { background: var(--sub); color: var(--main); }
-        .sort-select { 
-            padding: 8px 14px; border-radius: 14px; border: 1px solid var(--sub); background: var(--card); 
-            color: #555; font-size: 0.85rem; outline: none; cursor: pointer; appearance: none; font-weight: 600;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23999'%3e%3cpath d='M12 16L6 10H18L12 16Z'/%3e%3c/svg%3e");
-            background-repeat: no-repeat; background-position: right 14px center; background-size: 20px; padding-right: 30px;
-        }
+        .sort-select { padding: 8px 14px; border-radius: 14px; border: 1px solid var(--sub); background: var(--card); color: #555; font-size: 0.85rem; outline: none; cursor: pointer; appearance: none; font-weight: 600; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23999'%3e%3cpath d='M12 16L6 10H18L12 16Z'/%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 14px center; background-size: 20px; padding-right: 30px; }
 
-        /* 📋 콘텐츠 영역 */
-        .content-area { 
-            padding: 0 24px; 
-            flex-grow: 1; 
-            display: flex; 
-            flex-direction: column;
-            position: relative;
-        }
-        
-        /* 🔥 1. 리스트 뷰 디자인 개선 (Table-like Row Style) */
         .grid-view { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-        
         .list-view { display: flex; flex-direction: column; gap: 12px; }
-        .list-item { 
-            display: flex; align-items: center; 
-            background: var(--card); padding: 16px 20px; border-radius: 18px; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03); transition: var(--trans); 
-            cursor: pointer; border: 1px solid transparent; 
-            justify-content: space-between; gap: 15px;
-        }
+        .list-item { display: flex; align-items: center; background: var(--card); padding: 16px 20px; border-radius: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); transition: var(--trans); cursor: pointer; border: 1px solid transparent; justify-content: space-between; gap: 15px; }
         .list-item:hover { transform: translateX(4px); border-color: var(--main); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
-        
-        .list-item-left { display: flex; align-items: center; gap: 15px; flex: 1; overflow: hidden; }
-        .list-icon { 
-            width: 42px; height: 42px; border-radius: 12px; background: var(--sub); color: var(--main); 
-            display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; 
-        }
+        .list-icon { width: 42px; height: 42px; border-radius: 12px; background: var(--sub); color: var(--main); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
         .list-text-wrap { display: flex; flex-direction: column; gap: 2px; overflow: hidden; }
         .list-title { font-size: 1.05rem; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .list-meta { font-size: 0.85rem; color: #888; white-space: nowrap; }
-        
-        .list-actions { display: flex; gap: 8px; flex-shrink: 0; }
-        
-        /* 기존 카드 뷰 스타일 */
-        .card {
-            background: var(--card); border-radius: 20px; padding: 24px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.04); transition: var(--trans); cursor: pointer;
-            border: 1px solid transparent; display: flex; flex-direction: column;
-            height: 100%; position: relative; overflow: hidden;
-        }
+
+        .card { background: var(--card); border-radius: 20px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); transition: var(--trans); cursor: pointer; border: 1px solid transparent; display: flex; flex-direction: column; height: 100%; position: relative; overflow: hidden; }
         .card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.08); }
         .card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--main); opacity: 0.8; }
-        
         .card-meta { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 0.8rem; color: #888; align-items: center; }
         .badge { padding: 4px 8px; border-radius: 6px; font-weight: 800; font-size: 0.65rem; margin-right: 4px; }
         .badge-cat { background: var(--main); color: white; }
         .badge-folder { background: var(--sub); color: var(--main); }
-        
         .card-title { font-size: 1.15rem; font-weight: 700; color: var(--text); margin-bottom: 10px; line-height: 1.4; }
         .card-content { font-size: 0.95rem; line-height: 1.6; color: #555; margin-bottom: 15px; white-space: pre-wrap; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; flex-grow: 1; }
-        
         .card-preview { width: 100%; height: 160px; border-radius: 12px; margin-bottom: 15px; background: #f8f9fa; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 1px solid #eee; }
         .card-preview img { width: 100%; height: 100%; object-fit: cover; }
-        
         .card-actions { margin-top: 15px; padding-top: 15px; border-top: 1px solid #f0f0f0; display: flex; justify-content: flex-end; gap: 10px; }
         .action-btn { background: #f5f5f5; border: none; width: 36px; height: 36px; border-radius: 50%; color: #777; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--trans); }
         .action-btn:hover { background: var(--sub); color: var(--main); }
         .action-btn.del:hover { background: #fee; color: #e74c3c; }
 
-        /* 🔥 빈 상태 (중앙 정렬) */
-        .empty-msg { 
-            margin: auto; 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center; 
-            align-items: center; 
-            text-align: center; 
-            color: #aaa; 
-            width: 100%;
-            grid-column: 1 / -1; 
-        }
+        .empty-msg { margin: auto; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; color: #aaa; width: 100%; grid-column: 1 / -1; }
         .empty-msg i { font-size: 5rem; margin-bottom: 20px; color: var(--main); opacity: 0.4; }
         .empty-msg p { font-size: 1.1rem; font-weight: 600; margin: 0; line-height: 1.5; }
 
-        /* 모달 시스템 */
         .modal-wrap { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
         .modal-box { background: var(--card); width: 90%; max-width: 480px; border-radius: 24px; padding: 30px; max-height: 90vh; overflow-y: auto; animation: popIn 0.2s ease; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
         .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
@@ -190,87 +117,31 @@
         .close-btn { background: none; border: none; font-size: 1.6rem; color: #999; cursor: pointer; }
         .form-group { margin-bottom: 18px; }
         .form-label { display: block; font-size: 0.9rem; font-weight: 700; color: #666; margin-bottom: 8px; }
-        
-        /* 입력창 & 선택창 커스텀 */
-        .form-input { 
-            width: 100%; padding: 14px; border-radius: 14px; 
-            border: 1px solid var(--sub); background: var(--bg); 
-            font-size: 1rem; outline: none; font-family: var(--font-main); color: var(--text);
-            transition: all 0.2s;
-        }
-        select.form-input {
-            appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23999'%3e%3cpath d='M12 16L6 10H18L12 16Z'/%3e%3c/svg%3e");
-            background-repeat: no-repeat; background-position: right 14px center; background-size: 20px;
-        }
+        .form-input { width: 100%; padding: 14px; border-radius: 14px; border: 1px solid var(--sub); background: var(--bg); font-size: 1rem; outline: none; font-family: var(--font-main); color: var(--text); transition: all 0.2s; }
         .form-input:focus { border-color: var(--main); background: #fff; box-shadow: 0 0 0 3px rgba(0,0,0,0.03); }
         textarea.form-input { height: 120px; resize: none; line-height: 1.5; }
         .full-btn { width: 100%; padding: 16px; border-radius: 16px; background: var(--main); color: white; border: none; font-size: 1.1rem; font-weight: 700; cursor: pointer; margin-top: 10px; }
 
-        .manage-folder-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: var(--bg); border-radius: 14px; margin-bottom: 10px; }
-        .folder-del-btn { color: #e74c3c; cursor: pointer; padding: 4px; font-size: 1.4rem; }
-
-        /* 파일 선택 버튼 */
-        .file-box { 
-            border: 1px solid var(--sub); background: var(--bg);
-            padding: 20px; border-radius: 16px; text-align: center; cursor: pointer; 
-            color: #888; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px;
-            font-weight: 600; font-size: 0.95rem; flex-direction: column;
-        }
+        .file-box { border: 1px solid var(--sub); background: var(--bg); padding: 20px; border-radius: 16px; text-align: center; cursor: pointer; color: #888; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 600; font-size: 0.95rem; flex-direction: column; }
         .file-box:hover { border-color: var(--main); color: var(--main); background: #fdfdfd; }
-        .file-box i { font-size: 1.4rem; }
-        
-        .file-preview-area { margin-top: 10px; display: none; align-items: center; gap: 10px; padding: 10px; background: #fff; border: 1px solid #eee; border-radius: 12px; }
-        .file-preview-img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; }
-        .file-info { flex: 1; font-size: 0.9rem; font-weight: 600; color: #555; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .file-del-btn { color: #e74c3c; background: #fee; border-radius: 50%; padding: 5px; cursor: pointer; }
+        .tag-container { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px; border: 1px solid var(--sub); border-radius: 14px; background: var(--bg); min-height: 48px; align-items: center; cursor: text; }
+        .tag-block { background: var(--main); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+        .tag-input { border: none; background: transparent; outline: none; flex-grow: 1; font-family: var(--font-main); font-size: 0.95rem; min-width: 80px; color: var(--text); }
 
-        /* iframe 프리뷰 스타일 */
-        .preview-frame {
-            width: 100%;
-            height: 450px;
-            border: 1px solid #eee;
-            border-radius: 12px;
-            margin-top: 15px;
-            background: #f9f9f9;
-        }
-
-        /* 해시태그 블록 스타일 */
-        .tag-container {
-            display: flex; flex-wrap: wrap; gap: 8px; padding: 10px;
-            border: 1px solid var(--sub); border-radius: 14px; background: var(--bg);
-            min-height: 48px; align-items: center; cursor: text;
-        }
-        .tag-block {
-            background: var(--main); color: white; padding: 6px 12px; border-radius: 20px;
-            font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 6px;
-        }
-        .tag-close { cursor: pointer; font-size: 1rem; opacity: 0.8; }
-        .tag-close:hover { opacity: 1; }
-        .tag-input {
-            border: none; background: transparent; outline: none; flex-grow: 1;
-            font-family: var(--font-main); font-size: 0.95rem; min-width: 80px; color: var(--text);
-        }
-
-        /* 탭 스타일 (설정 모달용) */
         .setting-tabs { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid var(--sub); }
         .setting-tab { padding: 10px 15px; cursor: pointer; font-weight: 700; color: #999; border-bottom: 2px solid transparent; margin-bottom: -2px; }
         .setting-tab.active { color: var(--main); border-bottom-color: var(--main); }
         .setting-content { display: none; }
         .setting-content.active { display: block; animation: fadeIn 0.3s ease; }
-
-        /* 모달 푸터 스타일 (설정 모달 하단용) */
         .modal-footer { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color: #aaa; font-size: 0.85rem; }
         .modal-footer a { color: inherit; text-decoration: none; font-weight: 600; transition: var(--trans); opacity: 0.7; }
-        .modal-footer a:hover { color: var(--main); opacity: 1; }
 
         .toast-container { position: fixed; bottom: 110px; left: 50%; transform: translateX(-50%); z-index: 2000; width: 90%; max-width: 400px; pointer-events: none; }
         .toast { pointer-events: auto; background: rgba(33, 37, 41, 0.95); color: white; padding: 16px 24px; border-radius: 50px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: slideUp 0.3s ease; backdrop-filter: blur(4px); }
         .undo-btn { color: #FFD700; font-weight: 700; cursor: pointer; font-size: 0.95rem; background: none; border: none; text-decoration: underline; }
 
         .fab { position: fixed; bottom: 40px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: var(--main); color: white; border: none; font-size: 26px; box-shadow: 0 6px 20px rgba(0,0,0,0.25); cursor: pointer; z-index: 100; display: flex; align-items: center; justify-content: center; transition: var(--trans); }
-        .fab:hover { transform: scale(1.1) rotate(90deg); }
-
+        
         @keyframes popIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes slideUp { from { transform: translate(-50%, 20px); } to { opacity: 1; transform: translate(-50%, 0); } }
@@ -303,7 +174,8 @@
     <div class="search-area" id="searchContainer">
         <div class="search-wrapper">
             <div class="search-icon"><i class="ri-search-line"></i></div>
-            <input type="text" class="search-input" id="searchInput" placeholder="검색어 또는 #해시태그">
+            <!-- autocomplete="off"로 URL 노출 오류 해결 -->
+            <input type="text" class="search-input" id="searchInput" placeholder="검색어 또는 #해시태그" autocomplete="off">
         </div>
     </div>
 
@@ -345,7 +217,6 @@
         </select>
     </div>
 
-    <!-- 📋 영감 목록 영역 -->
     <div class="content-area" id="mainContent"></div>
     
     <button class="fab" id="fabBtn" onclick="openModal('writeModal')"><i class="ri-edit-2-fill"></i></button>
@@ -353,7 +224,7 @@
 
 <div id="toastContainer" class="toast-container"></div>
 
-<!-- 모달들 -->
+<!-- 폴더 관리 모달 -->
 <div class="modal-wrap" id="folderManageModal">
     <div class="modal-box">
         <div class="modal-head">
@@ -368,26 +239,6 @@
             </div>
         </div>
         <div id="manageFolderList"></div>
-    </div>
-</div>
-
-<div class="modal-wrap" id="folderDeleteChoiceModal">
-    <div class="modal-box">
-        <div class="modal-head">
-            <span class="modal-title"><i class="ri-alert-fill" style="color:#e74c3c"></i> 삭제 확인</span>
-            <button class="close-btn" onclick="closeModal('folderDeleteChoiceModal')"><i class="ri-close-line"></i></button>
-        </div>
-        <p id="deleteChoiceText" style="line-height:1.6; color:#555;"></p>
-        <div class="choice-btns">
-            <button class="choice-btn full-btn" style="background:var(--main); margin-bottom:10px;" id="btnMoveToUnassigned">
-                <i class="ri-folder-shared-line"></i>
-                <span>메모를 [기타]로 옮기고 폴더만 삭제</span>
-            </button>
-            <button class="choice-btn full-btn" id="btnDeleteAllNotes" style="color:#e74c3c; background: #fee; border: 1px solid #ffcccc;">
-                <i class="ri-delete-bin-2-line"></i>
-                <span>내부 메모까지 모두 영구 삭제</span>
-            </button>
-        </div>
     </div>
 </div>
 
@@ -411,13 +262,11 @@
         <div class="form-group"><label class="form-label">제목 / 출처</label><input type="text" class="form-input" id="inputTitle"></div>
         <div class="form-group"><label class="form-label">내용</label><textarea class="form-input" id="inputContent"></textarea></div>
         <div class="form-group"><label class="form-label">링크</label><input type="url" class="form-input" id="inputLink" placeholder="https://..."></div>
-        
         <div class="form-group">
             <label class="form-label">첨부파일</label>
             <label class="file-box" id="fileUploadBtn">
                 <i class="ri-file-add-line" style="font-size:1.6rem; color:var(--main);"></i>
                 <span>이미지, PDF 등 파일 선택</span>
-                <!-- 3. 모든 파일 허용 -->
                 <input type="file" id="inputFile" style="display:none" onchange="handleFileSelect(this)">
             </label>
             <div id="filePreviewArea" class="file-preview-area">
@@ -426,26 +275,13 @@
                 <i class="ri-close-line file-del-btn" onclick="removeFile()"></i>
             </div>
         </div>
-
         <div class="form-group">
             <label class="form-label">해시태그</label>
             <div class="tag-container" id="tagInputContainer" onclick="document.getElementById('realTagInput').focus()">
                 <input type="text" class="tag-input" id="realTagInput" placeholder="태그 입력 후 쉼표(,)">
             </div>
         </div>
-
         <button class="full-btn" onclick="saveNote()">저장하기</button>
-    </div>
-</div>
-
-<!-- 상세 보기 모달 -->
-<div class="modal-wrap" id="detailModal">
-    <div class="modal-box">
-        <div class="modal-head">
-            <span class="modal-title">상세 보기</span>
-            <button class="close-btn" onclick="closeModal('detailModal')"><i class="ri-close-line"></i></button>
-        </div>
-        <div id="detailContent"></div>
     </div>
 </div>
 
@@ -456,43 +292,33 @@
             <span class="modal-title">⚙️ 설정</span>
             <button class="close-btn" onclick="closeModal('settingsModal')"><i class="ri-close-line"></i></button>
         </div>
-        
         <div class="setting-tabs">
             <div class="setting-tab active" onclick="switchSettingTab('server')" id="tabServer">서버 연동</div>
             <div class="setting-tab" onclick="switchSettingTab('data')" id="tabData">데이터 관리</div>
         </div>
-
-        <!-- 탭 1: 서버 연동 -->
         <div class="setting-content active" id="contentServer">
             <div class="form-group">
                 <label class="form-label">Google 웹 앱 URL</label>
                 <input type="text" class="form-input" id="settingUrlInput" placeholder="https://script.google.com/macros/s/...">
-                <p style="font-size:0.8rem; color:#888; margin-top:6px;">* 배포 시 '모든 사용자(Anyone)' 접근 권한 확인</p>
             </div>
             <div class="form-group">
                 <label class="form-label">액세스 키 (설정한 비밀번호)</label>
                 <input type="password" class="form-input" id="settingKeyInput" placeholder="비밀번호 입력">
             </div>
-            <div style="display:flex; gap:10px;">
-                <button type="button" class="full-btn" onclick="saveSettings()">연동하기</button>
-                <button type="button" class="full-btn" style="background:#eee; color:#555;" onclick="enableOfflineMode()">오프라인으로 시작</button>
-            </div>
-        </div>
-
-        <!-- 탭 2: 데이터 관리 (오프라인 모드용) -->
-        <div class="setting-content" id="contentData">
-            <p style="font-size:0.9rem; color:#666; margin-bottom:15px; line-height:1.5;">
-                오프라인 모드에서는 데이터가 브라우저에만 저장됩니다.<br>
-                데이터를 안전하게 보관하거나 다른 기기로 옮기려면 <b>백업 파일(.json)</b>을 활용하세요.
-            </p>
-            
-            <div class="form-group">
-                <button class="full-btn" style="background:var(--main); display:flex; justify-content:center; align-items:center; gap:8px;" onclick="exportData()">
-                    <i class="ri-download-cloud-2-line"></i> 데이터 백업 (다운로드)
+            <div style="display:flex; flex-direction: column; gap:10px;">
+                <div style="display:flex; gap:10px;">
+                    <button type="button" class="full-btn" onclick="saveSettings()">연동하기</button>
+                    <button type="button" class="full-btn" style="background:#eee; color:#555;" onclick="enableOfflineMode()">오프라인으로 시작</button>
+                </div>
+                <button type="button" class="full-btn" style="background:#fee; color:#e74c3c; margin-top:10px; display:none;" id="disconnectBtn" onclick="disconnectServer()">
+                    <i class="ri-logout-box-line"></i> 앱스크립트 연동 해제 (로그아웃)
                 </button>
             </div>
-
-            <div class="form-group">
+        </div>
+        <div class="setting-content" id="contentData">
+            <p style="font-size:0.9rem; color:#666; margin-bottom:15px; line-height:1.5;">브라우저에 저장된 데이터를 백업하거나 복구할 수 있습니다.</p>
+            <button class="full-btn" style="background:var(--main); display:flex; justify-content:center; align-items:center; gap:8px;" onclick="exportData()"><i class="ri-download-cloud-2-line"></i> 데이터 백업</button>
+            <div class="form-group" style="margin-top:15px;">
                 <label class="file-box" style="border-style:dashed;">
                     <i class="ri-upload-cloud-2-line" style="font-size:1.6rem; color:#888;"></i>
                     <span>백업 파일 불러오기 (.json)</span>
@@ -500,62 +326,59 @@
                 </label>
             </div>
         </div>
-
-        <!-- 설정 모달 하단 푸터 추가 -->
         <div class="modal-footer">
             <a href="https://litt.ly/chichiboo" target="_blank">Created by. 교육뮤지컬 꿈꾸는 치수쌤</a>
         </div>
-
     </div>
 </div>
 
 <script>
-    // --- 설정 ---
-    const DEFAULT_URL = "";
-    const DEFAULT_KEY = "";
-
-    let webAppUrl = localStorage.getItem('inspirationNote_Url') || DEFAULT_URL; 
-    let accessKey = localStorage.getItem('inspirationNote_Key') || DEFAULT_KEY;
-    let isOfflineMode = localStorage.getItem('inspirationNote_Offline') === 'true'; // 오프라인 모드 여부
-    
-    // 저장된 URL이 있으면 온라인으로 간주하되, 오프라인 모드면 로컬 우선
-    let isConnected = (webAppUrl !== "" && accessKey !== "") || isOfflineMode;
+    // --- 설정 및 변수 ---
+    let webAppUrl = localStorage.getItem('inspirationNote_Url') || ""; 
+    let accessKey = localStorage.getItem('inspirationNote_Key') || "";
+    let isOfflineMode = localStorage.getItem('inspirationNote_Offline') === 'true'; 
     let notes = [];
-    let undoStack = [];
     let customFolders = JSON.parse(localStorage.getItem('inspirationFolders')) || ["아이디어", "뮤지컬", "독서", "교육"];
     let viewState = { cat: 'all', folder: 'all', mode: 'grid', sort: 'date-desc', search: '' };
+    let currentTags = [];
     let tempFile = null;
-    let currentTags = []; 
 
     const catMap = { 'text': 'TEXT', 'daily': 'LIFE', 'art': 'ART&EDU' };
     const catName = { 'text': '문장/단어', 'daily': '일상', 'art': '예술/교육' };
-    const catIcon = { 'text': 'ri-text', 'daily': 'ri-cup-line', 'art': 'ri-palette-line' }; // 아이콘 매핑 추가
+    const catIcon = { 'text': 'ri-text', 'daily': 'ri-cup-line', 'art': 'ri-palette-line' };
 
     document.addEventListener('DOMContentLoaded', () => {
-        initApp();
-        document.getElementById('searchInput').addEventListener('input', (e) => { viewState.search = e.target.value; refreshUI(); });
-        document.getElementById('themeSelector').addEventListener('change', (e) => setTheme(e.target.value));
+        // 검색창 URL 노출 방지를 위한 명시적 초기화
+        const searchInput = document.getElementById('searchInput');
+        if(searchInput) searchInput.value = "";
         
-        const tagInput = document.getElementById('realTagInput');
-        tagInput.addEventListener('keydown', handleTagInput);
-        tagInput.addEventListener('input', handleTagComma);
+        initApp();
+        
+        if(searchInput) searchInput.addEventListener('input', (e) => { viewState.search = e.target.value; refreshUI(); });
+        document.getElementById('themeSelector').addEventListener('change', (e) => setTheme(e.target.value));
+        document.getElementById('realTagInput').addEventListener('keydown', handleTagInput);
+        document.getElementById('realTagInput').addEventListener('input', handleTagComma);
     });
 
+    // --- 초기화 로직 (새로고침 시 로그인 유지 보장) ---
     function initApp() {
         const t = localStorage.getItem('theme') || 'blue';
         setTheme(t);
         document.getElementById('themeSelector').value = t;
         
+        // 연동 해제 버튼 상태 초기화
+        document.getElementById('disconnectBtn').style.display = (webAppUrl && accessKey) ? 'block' : 'none';
+
         if (isOfflineMode) {
             updateStatusUI('offline');
-            loadFromCache(); // 로컬 데이터 로드
+            loadFromCache(); 
         } else if (webAppUrl && accessKey) {
-            // 저장된 키가 있으면 바로 연결 시도
-            fetchNotes();
+            // 새로고침 시에도 URL과 KEY가 있으면 즉시 서버 동기화
+            fetchNotes(); 
         } else {
             updateStatusUI('error', '설정 필요');
             refreshUI();
-            setTimeout(() => { if(!isConnected) openModal('settingsModal'); }, 500);
+            setTimeout(() => { if(!webAppUrl && !isOfflineMode) openModal('settingsModal'); }, 500);
         }
         renderFolders();
     }
@@ -565,7 +388,6 @@
     function updateStatusUI(type, text) {
         const el = document.getElementById('connectionStatus');
         if (!el) return;
-        
         if (type === 'offline') {
             el.className = 'status-offline';
             el.innerHTML = '<i class="ri-hard-drive-line"></i> <span>로컬 모드</span>';
@@ -575,83 +397,15 @@
         }
     }
 
-    // --- 설정 탭 전환 ---
-    function switchSettingTab(tab) {
-        document.querySelectorAll('.setting-tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.setting-content').forEach(c => c.classList.remove('active'));
-        
-        document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.add('active');
-        document.getElementById(`content${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.add('active');
-    }
-
-    // --- 오프라인 모드 활성화 ---
-    function enableOfflineMode() {
-        try {
-            localStorage.setItem('inspirationNote_Offline', 'true');
-        } catch (e) {
-            console.error("Local Storage Error", e);
-            alert("로컬 스토리지를 사용할 수 없는 환경입니다.");
-            return;
-        }
-        
-        isOfflineMode = true;
-        isConnected = true;
-        // 오프라인 전환 시 기존 연동 정보는 유지하되 우선순위만 변경됨
-        
-        closeModal('settingsModal');
-        updateStatusUI('offline');
-        loadFromCache();
-        
-        // 토스트 메시지 (간단 알림)
-        showToast("오프라인 모드로 전환되었습니다.");
-    }
-
-    function showToast(msg) {
-        const container = document.getElementById('toastContainer');
-        const toast = document.createElement('div');
-        toast.className = 'toast';
-        toast.innerHTML = `<span>${msg}</span>`;
-        container.appendChild(toast);
-        setTimeout(() => { if(toast.parentNode) toast.remove(); }, 3000);
-    }
-
-    // --- 📡 데이터 통신 및 로컬 저장 ---
-    function saveToCache(data) {
-        try {
-            // base64 데이터 제외하고 저장 (용량 확보)
-            const cacheData = data.map(n => {
-                if (n.file_url && n.file_url.startsWith('data:')) {
-                    return { ...n, file_url: '' }; 
-                }
-                return n;
-            });
-            localStorage.setItem('notes_cache', JSON.stringify(cacheData));
-        } catch (e) { console.warn("Local Storage Full:", e); }
-    }
-
-    function loadFromCache() {
-        const cached = localStorage.getItem('notes_cache');
-        if (cached) {
-            notes = JSON.parse(cached);
-            refreshUI();
-        }
-    }
-
     async function fetchNotes() {
-        if (isOfflineMode) return; // 오프라인이면 서버 통신 스킵
-        if (!webAppUrl) return;
-
-        updateStatusUI('connecting');
-        showLoader(true, "서버 연결 확인 중...");
+        if (!webAppUrl || isOfflineMode) return;
+        updateStatusUI('connecting', '동기화 중...');
+        showLoader(true);
         
         try {
             const params = new URLSearchParams({ action: 'read', key: accessKey, t: Date.now() });
-            const targetUrl = `${webAppUrl}?${params.toString()}`;
-            const res = await fetch(targetUrl, { redirect: "follow" });
-            const text = await res.text();
-            let json;
-            try { json = JSON.parse(text); } 
-            catch(e) { throw new Error("데이터를 읽을 수 없습니다. (배포 권한 '모든 사용자' 확인 필요)"); }
+            const res = await fetch(`${webAppUrl}?${params.toString()}`, { redirect: "follow" });
+            const json = await res.json();
 
             if (json.status === "success") {
                 notes = json.data.map(n => ({
@@ -665,314 +419,63 @@
             } else { throw new Error(json.message); }
         } catch (e) {
             updateStatusUI('error', '연결 실패');
-            console.error("Fetch Error:", e);
-            if(e.message.includes('배포 권한')) alert(e.message);
+            loadFromCache(); // 서버 실패 시 캐시 사용
         } finally { showLoader(false); }
     }
 
-    async function postData(data) {
-        if (isOfflineMode) return; // 오프라인이면 전송 안 함
-        return fetch(webAppUrl, { 
-            method: 'POST',
-            redirect: 'follow', 
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
-            body: JSON.stringify({ ...data, key: accessKey }) 
-        });
+    function disconnectServer() {
+        if(!confirm("서버 연동을 해제하고 로그아웃하시겠습니까? 정보가 삭제됩니다.")) return;
+        localStorage.removeItem('inspirationNote_Url');
+        localStorage.removeItem('inspirationNote_Key');
+        localStorage.removeItem('inspirationNote_Offline');
+        localStorage.removeItem('notes_cache');
+        showToast("연동이 해제되었습니다.");
+        setTimeout(() => location.reload(), 1000);
     }
 
-    // --- ⚙️ 설정 관리 (서버 연동) ---
+    function saveToCache(data) {
+        try {
+            const cacheData = data.map(n => (n.file_url && n.file_url.startsWith('data:')) ? { ...n, file_url: '' } : n);
+            localStorage.setItem('notes_cache', JSON.stringify(cacheData));
+        } catch (e) { console.warn("Cache Full"); }
+    }
+
+    function loadFromCache() {
+        const cached = localStorage.getItem('notes_cache');
+        if (cached) { notes = JSON.parse(cached); refreshUI(); }
+    }
+
     async function saveSettings() {
         const url = document.getElementById('settingUrlInput').value.trim();
         const key = document.getElementById('settingKeyInput').value.trim();
-        if(!url || !key) return alert("URL과 비밀번호를 모두 입력해 주세요.");
+        if(!url || !key) return alert("필수 정보를 입력하세요.");
         
-        showLoader(true, "서버 연결 테스트 중...");
-        
+        showLoader(true, "서버 테스트 중...");
         try {
-             const params = new URLSearchParams({ action: 'read', key: key, t: Date.now() });
-             const res = await fetch(`${url}?${params.toString()}`, { redirect: "follow" });
-             const text = await res.text();
-             let json;
-             try { json = JSON.parse(text); } catch(e) { throw new Error("구글 스크립트 배포 권한을 확인해주세요."); }
-
-             if(json.status === 'success') {
-                try {
-                    localStorage.setItem('inspirationNote_Url', url);
-                    localStorage.setItem('inspirationNote_Key', key);
-                    localStorage.removeItem('inspirationNote_Offline'); // 온라인 전환 시 오프라인 모드 해제
-                } catch(e) {
-                    console.error("LocalStorage save failed", e);
-                }
-                
-                webAppUrl = url;
-                accessKey = key;
-                isOfflineMode = false;
-                isConnected = true;
-
+            const params = new URLSearchParams({ action: 'read', key: key, t: Date.now() });
+            const res = await fetch(`${url}?${params.toString()}`, { redirect: "follow" });
+            const json = await res.json();
+            if(json.status === 'success') {
+                localStorage.setItem('inspirationNote_Url', url);
+                localStorage.setItem('inspirationNote_Key', key);
+                localStorage.removeItem('inspirationNote_Offline');
+                webAppUrl = url; accessKey = key; isOfflineMode = false;
                 alert("연결 성공!");
                 closeModal('settingsModal');
-                fetchNotes(); 
-             } else {
-                 throw new Error(json.message || "알 수 없는 오류");
-             }
-        } catch (e) {
-            alert(`연결 실패: ${e.message}`);
-            updateStatusUI('error', '설정 오류');
-        } finally { showLoader(false); }
+                initApp();
+            } else { alert("비밀번호 오류입니다."); }
+        } catch (e) { alert("URL이 올바르지 않거나 배포 권한 오류입니다."); }
+        finally { showLoader(false); }
     }
 
-    // --- 📂 JSON 백업/복원 ---
-    function exportData() {
-        if(notes.length === 0) return alert("저장된 데이터가 없습니다.");
-        const dataStr = JSON.stringify(notes, null, 2);
-        const blob = new Blob([dataStr], {type: "application/json"});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `inspiration_backup_${new Date().toISOString().slice(0,10)}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
+    function enableOfflineMode() {
+        localStorage.setItem('inspirationNote_Offline', 'true');
+        isOfflineMode = true;
+        closeModal('settingsModal');
+        initApp();
+        showToast("오프라인 모드 시작");
     }
 
-    function importData(input) {
-        const file = input.files[0];
-        if(!file) return;
-        
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            try {
-                const data = JSON.parse(e.target.result);
-                if(Array.isArray(data)) {
-                    if(confirm(`총 ${data.length}개의 영감을 불러오시겠습니까?\n(기존 데이터는 덮어씌워집니다)`)) {
-                        notes = data;
-                        saveToCache(notes);
-                        refreshUI();
-                        alert("성공적으로 불러왔습니다.");
-                    }
-                } else { alert("올바른 백업 파일 형식이 아닙니다."); }
-            } catch(err) { alert("파일을 읽는 중 오류가 발생했습니다."); }
-        };
-        reader.readAsText(file);
-        input.value = ""; // 초기화
-    }
-
-    // --- 📝 영감 CRUD ---
-    async function saveNote() {
-        if (!isConnected) return openModal('settingsModal');
-        const title = document.getElementById('inputTitle').value;
-        if (!title) return alert('제목을 입력해주세요.');
-
-        const editId = document.getElementById('editNoteId').value;
-        const now = Date.now();
-        const folder = document.getElementById('folderSelect').value;
-        
-        const note = {
-            id: editId ? editId : String(now),
-            category: document.getElementById('inputCategory').value,
-            folder: folder || '기타',
-            title: title,
-            content: document.getElementById('inputContent').value,
-            link: document.getElementById('inputLink').value,
-            tags: currentTags,
-            date: new Date().toLocaleDateString(),
-            created_at: editId ? (notes.find(n=>n.id===editId)?.created_at || now) : now,
-        };
-
-        const displayFileUrl = tempFile ? tempFile.data : (editId ? (notes.find(n=>n.id===editId)?.file_url || null) : null);
-        const localNote = { ...note, file_url: displayFileUrl, deleted_at: null };
-
-        if (editId) { notes = notes.map(n => n.id === editId ? localNote : n); } 
-        else { notes.unshift(localNote); }
-        
-        saveToCache(notes);
-        closeModal('writeModal');
-        refreshUI();
-
-        // 오프라인 모드가 아닐 때만 서버 전송
-        if (!isOfflineMode) {
-            try {
-                showLoader(true, "저장 중...");
-                const payload = {
-                    action: 'create',
-                    ...note,
-                    file: tempFile ? tempFile : null,
-                    file_url: tempFile ? "" : (displayFileUrl || "")
-                };
-                await postData(payload);
-                setTimeout(fetchNotes, 1500); 
-            } catch (e) { console.error("Save Error", e); }
-        }
-    }
-
-    function deleteNote(id) {
-        const idx = notes.findIndex(n => n.id == id);
-        if (idx === -1) return;
-        const deletedNote = notes[idx];
-        notes.splice(idx, 1);
-        saveToCache(notes); // 즉시 반영
-        refreshUI();
-
-        const undoId = Date.now();
-        // 오프라인이 아니면 서버 삭제 예약
-        if (!isOfflineMode) {
-            const timer = setTimeout(async () => {
-                await postData({ action: 'delete', id: String(id) });
-                undoStack = undoStack.filter(item => item.undoId !== undoId);
-            }, 5000);
-            undoStack.push({ undoId, note: deletedNote, timer });
-        } else {
-            // 오프라인일 땐 타이머 없이 스택만 (단순 복구용)
-            undoStack.push({ undoId, note: deletedNote, timer: null });
-        }
-        showUndoToast(undoId);
-    }
-
-    function showUndoToast(undoId) {
-        const container = document.getElementById('toastContainer');
-        const toast = document.createElement('div');
-        toast.className = 'toast';
-        toast.id = `toast-${undoId}`;
-        toast.innerHTML = `<span>영감을 삭제했습니다.</span><button class="undo-btn" onclick="undoAction(${undoId})">되돌리기</button>`;
-        container.appendChild(toast);
-        setTimeout(() => { if(toast.parentNode) toast.remove(); }, 5000);
-    }
-
-    function undoAction(undoId) {
-        const idx = undoStack.findIndex(i => i.undoId === undoId);
-        if (idx === -1) return;
-        const { note, timer } = undoStack[idx];
-        if(timer) clearTimeout(timer); 
-        notes.unshift(note);
-        saveToCache(notes);
-        refreshUI();
-        const el = document.getElementById(`toast-${undoId}`);
-        if (el) el.remove();
-        undoStack.splice(idx, 1);
-    }
-
-    // --- 📁 폴더 관리 (생략 가능하나 전체 코드 유지를 위해 포함) ---
-    function openFolderManage() { renderManageFolders(); openModal('folderManageModal'); }
-    function renderManageFolders() {
-        const list = document.getElementById('manageFolderList');
-        if (!list) return;
-        list.innerHTML = customFolders.map(f => `<div class="manage-folder-item"><span class="folder-del-btn" onclick="requestRemoveFolder('${f}')"><i class="ri-close-circle-fill"></i></span><span style="font-weight:700">${f}</span><span></span></div>`).join('');
-    }
-    function addFolder() {
-        const name = document.getElementById('newFolderName').value.trim();
-        if (name && !customFolders.includes(name)) {
-            customFolders.push(name);
-            localStorage.setItem('inspirationFolders', JSON.stringify(customFolders));
-            document.getElementById('newFolderName').value = '';
-            renderManageFolders(); renderFolders();
-        }
-    }
-    function removeFolder(name) {
-        if (!confirm(`'${name}' 폴더를 목록에서 제거할까요?`)) return;
-        customFolders = customFolders.filter(f => f !== name);
-        localStorage.setItem('inspirationFolders', JSON.stringify(customFolders));
-        renderManageFolders(); renderFolders(); refreshUI();
-    }
-    function requestRemoveFolder(name) {
-        const hasNotes = notes.some(n => n.folder === name);
-        if (hasNotes) {
-            document.getElementById('deleteChoiceText').innerHTML = `<b>${name}</b> 폴더에 메모가 있습니다.`;
-            document.getElementById('folderDeleteChoiceModal').style.display = 'flex';
-            document.getElementById('btnMoveToUnassigned').onclick = () => confirmRemoveFolder(name, 'move');
-            document.getElementById('btnDeleteAllNotes').onclick = () => confirmRemoveFolder(name, 'all');
-        } else {
-            confirmRemoveFolder(name, 'only-folder');
-        }
-    }
-    async function confirmRemoveFolder(name, mode) {
-        if (mode === 'move') {
-            notes = notes.map(n => n.folder === name ? {...n, folder: '기타'} : n);
-            // 오프라인 아니면 서버 업데이트
-            if (!isOfflineMode) notes.filter(n => n.folder === '기타').forEach(n => postData({ action: 'create', ...n }));
-        } else if (mode === 'all') {
-            const idsToDelete = notes.filter(n => n.folder === name).map(n => n.id);
-            notes = notes.filter(n => n.folder !== name);
-            if (!isOfflineMode) idsToDelete.forEach(id => postData({ action: 'delete', id: String(id) }));
-        }
-        customFolders = customFolders.filter(f => f !== name);
-        if(viewState.folder === name) viewState.folder = 'all';
-        localStorage.setItem('inspirationFolders', JSON.stringify(customFolders));
-        saveToCache(notes);
-        closeModal('folderDeleteChoiceModal');
-        renderManageFolders(); renderFolders(); refreshUI();
-    }
-    function renderFolders() {
-        const con = document.getElementById('foldersContainer');
-        if (!con) return; con.innerHTML = '';
-        const allBtn = document.createElement('span');
-        allBtn.className = `folder-chip ${viewState.folder === 'all' ? 'active' : ''}`;
-        allBtn.innerText = '전체보기';
-        allBtn.onclick = () => { viewState.folder = 'all'; renderFolders(); refreshUI(); };
-        con.appendChild(allBtn);
-        customFolders.forEach(f => {
-            const chip = document.createElement('span');
-            chip.className = `folder-chip ${viewState.folder === f ? 'active' : ''}`;
-            chip.innerText = f;
-            chip.onclick = () => { viewState.folder = f; renderFolders(); refreshUI(); };
-            con.appendChild(chip);
-        });
-    }
-
-    // --- 기타 유틸 (태그, 파일 등) ---
-    function handleTagInput(e) {
-        if (e.key === 'Enter') { e.preventDefault(); addTag(e.target.value); }
-        else if (e.key === 'Backspace' && e.target.value === '' && currentTags.length > 0) removeTag(currentTags.length - 1);
-    }
-    function handleTagComma(e) {
-        if (e.target.value.includes(',')) {
-            const parts = e.target.value.split(',');
-            parts.forEach(p => { if(p.trim()) addTag(p); });
-            e.target.value = '';
-        }
-    }
-    function addTag(text) {
-        const tag = text.trim().replace(/^#/, '');
-        if (tag && !currentTags.includes('#' + tag)) currentTags.push('#' + tag);
-        document.getElementById('realTagInput').value = '';
-        renderTags();
-    }
-    function removeTag(index) { currentTags.splice(index, 1); renderTags(); }
-    function renderTags() {
-        const container = document.getElementById('tagInputContainer');
-        const input = document.getElementById('realTagInput');
-        Array.from(container.children).forEach(c => { if (c !== input) container.removeChild(c); });
-        currentTags.forEach((tag, idx) => {
-            const span = document.createElement('span');
-            span.className = 'tag-block';
-            span.innerHTML = `${tag} <i class="ri-close-line tag-close" onclick="removeTag(${idx})"></i>`;
-            container.insertBefore(span, input);
-        });
-    }
-    function handleFileSelect(input) {
-        const file = input.files[0]; if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            tempFile = { name: file.name, type: file.type, data: e.target.result };
-            updateFileUI(file.name, file.type, e.target.result);
-        };
-        reader.readAsDataURL(file);
-    }
-    function removeFile() {
-        tempFile = null;
-        document.getElementById('inputFile').value = "";
-        document.getElementById('filePreviewArea').style.display = 'none';
-        document.getElementById('fileUploadBtn').style.display = 'flex';
-    }
-    function updateFileUI(name, type, data) {
-        document.getElementById('fileUploadBtn').style.display = 'none';
-        const area = document.getElementById('filePreviewArea');
-        area.style.display = 'flex';
-        document.getElementById('uploadInfo').innerText = name;
-        const img = document.getElementById('uploadImg');
-        if (type.startsWith('image/')) { img.src = data; img.style.display = 'block'; } 
-        else { img.style.display = 'none'; }
-    }
-
-    // --- 🖼️ UI 렌더링 ---
     function refreshUI() {
         const container = document.getElementById('mainContent');
         if (!container) return;
@@ -989,7 +492,7 @@
 
         if (list.length === 0) {
             container.className = 'content-area';
-            container.innerHTML = `<div class="empty-msg"><i class="ri-seedling-line"></i><p>${isOfflineMode ? "저장된 영감이 없습니다." : (isConnected ? "표시할 영감이 없습니다." : "서버를 연동하거나 오프라인 모드를 시작하세요.")}</p></div>`;
+            container.innerHTML = `<div class="empty-msg"><i class="ri-seedling-line"></i><p>표시할 영감이 없습니다.</p></div>`;
         } else {
             container.className = viewState.mode === 'grid' ? 'content-area grid-view' : 'content-area list-view';
             list.forEach(note => {
@@ -998,41 +501,21 @@
                 const cIcon = catIcon[note.category] || 'ri-file-text-line';
                 const tagsHTML = (note.tags || []).map(t => `<span class="tag" style="font-size:0.75rem; color:var(--main); background:var(--bg); padding:4px 10px; border-radius:8px; font-weight:600; margin-right:5px;">${t}</span>`).join('');
                 
-                // 그리드 뷰용 프리뷰
                 let preview = '';
                 if(viewState.mode === 'grid' && note.file_url) {
-                    if (note.file_url.startsWith('data:image')) {
-                        preview = `<div class="card-preview"><img src="${note.file_url}"></div>`;
-                    } else if (note.file_url.startsWith('http')) {
+                    if (note.file_url.startsWith('data:image')) preview = `<div class="card-preview"><img src="${note.file_url}"></div>`;
+                    else {
                         const driveId = getGoogleDriveId(note.file_url);
-                        if (driveId) {
-                             preview = `<div class="card-preview"><img src="https://drive.google.com/thumbnail?sz=w500&id=${driveId}" onload="this.style.opacity=1" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" style="width:100%; height:100%; object-fit:cover; opacity:0; transition:opacity 0.3s;"><div style="display:none; width:100%; height:100%; background:#f0f8ff; color:var(--main); flex-direction:column; align-items:center; justify-content:center;"><i class="ri-file-text-line" style="font-size:3rem;"></i></div></div>`;
-                        } else {
-                             preview = `<div class="card-preview" style="background:#f0f8ff; color:var(--main); font-size:3rem;"><i class="ri-file-text-line"></i></div>`;
-                        }
+                        if (driveId) preview = `<div class="card-preview"><img src="https://drive.google.com/thumbnail?sz=w500&id=${driveId}" style="width:100%; height:100%; object-fit:cover;"></div>`;
                     }
                 }
 
                 if (viewState.mode === 'grid') {
-                    // 카드 뷰
                     el.className = 'card';
-                    el.innerHTML = `<div class="card-meta"><div class="card-badges"><span class="badge badge-cat">${engCat}</span><span class="badge badge-folder">${note.folder}</span></div><span>${note.date}</span></div><div class="card-title">${note.title}</div><div class="card-content">${note.content}</div>${preview}<div class="card-tags">${tagsHTML}</div><div class="card-actions" onclick="event.stopPropagation()"><button class="action-btn" onclick="openEditModal('${note.id}')"><i class="ri-edit-line"></i></button><button class="action-btn del" onclick="deleteNote('${note.id}')"><i class="ri-delete-bin-line"></i></button></div>`;
+                    el.innerHTML = `<div class="card-meta"><div><span class="badge badge-cat">${engCat}</span><span class="badge badge-folder">${note.folder}</span></div><span>${note.date}</span></div><div class="card-title">${note.title}</div><div class="card-content">${note.content}</div>${preview}<div class="card-tags">${tagsHTML}</div><div class="card-actions" onclick="event.stopPropagation()"><button class="action-btn" onclick="openEditModal('${note.id}')"><i class="ri-edit-line"></i></button><button class="action-btn del" onclick="deleteNote('${note.id}')"><i class="ri-delete-bin-line"></i></button></div>`;
                 } else {
-                    // 🔥 리스트 뷰 개선 (Row 스타일)
                     el.className = 'list-item';
-                    el.innerHTML = `
-                        <div class="list-item-left">
-                            <div class="list-icon"><i class="${cIcon}"></i></div>
-                            <div class="list-text-wrap">
-                                <div class="list-title">${note.title}</div>
-                                <div class="list-meta">${note.folder} · ${note.date} ${note.file_url ? '· <i class="ri-attachment-2"></i>' : ''}</div>
-                            </div>
-                        </div>
-                        <div class="list-actions" onclick="event.stopPropagation()">
-                            <button class="action-btn" onclick="openEditModal('${note.id}')"><i class="ri-edit-line"></i></button>
-                            <button class="action-btn del" onclick="deleteNote('${note.id}')"><i class="ri-delete-bin-line"></i></button>
-                        </div>
-                    `;
+                    el.innerHTML = `<div class="list-item-left"><div class="list-icon"><i class="${cIcon}"></i></div><div class="list-text-wrap"><div class="list-title">${note.title}</div><div class="list-meta">${note.folder} · ${note.date}</div></div></div><div class="list-actions" onclick="event.stopPropagation()"><button class="action-btn" onclick="openEditModal('${note.id}')"><i class="ri-edit-line"></i></button><button class="action-btn del" onclick="deleteNote('${note.id}')"><i class="ri-delete-bin-line"></i></button></div>`;
                 }
                 el.onclick = () => openDetail(note);
                 container.appendChild(el);
@@ -1041,102 +524,74 @@
         updateDashboard();
     }
 
-    function updateDashboard() {
-        const total = document.getElementById('dashTotal');
-        if(!total) return;
-        total.innerText = notes.length;
-        document.getElementById('dashText').innerText = notes.filter(n => n.category === 'text').length;
-        document.getElementById('dashLife').innerText = notes.filter(n => n.category === 'daily').length;
-        document.getElementById('dashArt').innerText = notes.filter(n => n.category === 'art').length;
+    async function saveNote() {
+        const title = document.getElementById('inputTitle').value;
+        if (!title) return alert('제목을 입력해주세요.');
+        const editId = document.getElementById('editNoteId').value;
+        const now = Date.now();
+        const note = {
+            id: editId || String(now),
+            category: document.getElementById('inputCategory').value,
+            folder: document.getElementById('folderSelect').value || '기타',
+            title: title, content: document.getElementById('inputContent').value,
+            link: document.getElementById('inputLink').value,
+            tags: currentTags, date: new Date().toLocaleDateString(), created_at: now
+        };
+
+        const displayFileUrl = tempFile ? tempFile.data : (editId ? notes.find(n=>n.id===editId)?.file_url : null);
+        if (editId) notes = notes.map(n => n.id === editId ? {...note, file_url: displayFileUrl} : n);
+        else notes.unshift({...note, file_url: displayFileUrl});
+        
+        saveToCache(notes); closeModal('writeModal'); refreshUI();
+
+        if (!isOfflineMode) {
+            showLoader(true, "저장 중...");
+            await fetch(webAppUrl, { method: 'POST', body: JSON.stringify({ action: 'create', ...note, file: tempFile, key: accessKey }), headers: { 'Content-Type': 'text/plain' } });
+            setTimeout(fetchNotes, 1500);
+        }
+    }
+
+    function deleteNote(id) {
+        if(!confirm("삭제하시겠습니까?")) return;
+        notes = notes.filter(n => n.id !== id);
+        saveToCache(notes); refreshUI();
+        if(!isOfflineMode) fetch(webAppUrl, { method: 'POST', body: JSON.stringify({ action: 'delete', id: id, key: accessKey }), headers: { 'Content-Type': 'text/plain' } });
     }
 
     function openModal(id) {
         document.getElementById(id).style.display = 'flex';
         if (id === 'writeModal') {
-            const sel = document.getElementById('folderSelect');
-            sel.innerHTML = customFolders.map(f => `<option value="${f}">${f}</option>`).join('') + '<option value="기타">기타</option>';
-            document.querySelectorAll('#writeModal .form-input').forEach(i => i.value = "");
+            document.getElementById('folderSelect').innerHTML = customFolders.map(f => `<option value="${f}">${f}</option>`).join('') + '<option value="기타">기타</option>';
             document.getElementById('editNoteId').value = "";
-            document.getElementById('fileUploadBtn').style.display = 'flex';
-            document.getElementById('filePreviewArea').style.display = 'none';
-            removeFile();
-            currentTags = [];
-            renderTags();
-            document.getElementById('inputCategory').value = viewState.cat === 'all' ? 'text' : viewState.cat;
-        }
-        if (id === 'settingsModal') {
-            // 설정 모달 초기화
-            if(!isOfflineMode) {
-                document.getElementById('settingUrlInput').value = webAppUrl;
-                document.getElementById('settingKeyInput').value = accessKey;
-            }
-            switchSettingTab('server');
+            document.querySelectorAll('#writeModal .form-input').forEach(i => i.value = "");
+            removeFile(); currentTags = []; renderTags();
         }
     }
-    
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-
-    function openEditModal(id) {
-        const note = notes.find(n => n.id === id);
-        if(!note) return;
-        openModal('writeModal');
-        document.getElementById('modalTitle').innerText = "영감 수정 ✏️";
-        document.getElementById('editNoteId').value = id;
-        document.getElementById('inputCategory').value = note.category;
-        document.getElementById('folderSelect').value = note.folder;
-        document.getElementById('inputTitle').value = note.title;
-        document.getElementById('inputContent').value = note.content;
-        document.getElementById('inputLink').value = note.link;
-        currentTags = [...note.tags];
-        renderTags();
-        if (note.file_url) {
-            tempFile = { data: note.file_url, name: '기존 파일', type: 'image/jpeg' }; 
-            updateFileUI('기존 파일', 'image/jpeg', note.file_url);
-        }
-    }
-    
-    function openDetail(note) {
-        const c = document.getElementById('detailContent');
-        if(!c) return;
-        let media = '';
-        if (note.file_url) {
-            if (note.file_url.startsWith('data:')) {
-                 media = note.file_url.startsWith('data:image') ? `<div style="margin-top:20px; border-radius:12px; overflow:hidden; border:1px solid #eee;"><img src="${note.file_url}" style="width:100%; object-fit:contain;"></div>` : `<div style="margin-top:20px; padding:15px; background:#f0f4f8; border-radius:12px; color:#666;">📄 미리보기 불가 (저장 후 확인 가능)</div>`;
-            } else {
-                const driveId = getGoogleDriveId(note.file_url);
-                media = driveId ? `<iframe src="https://drive.google.com/file/d/${driveId}/preview" class="preview-frame" allow="autoplay"></iframe>` : `<div style="margin-top:20px; padding:15px; background:#f0f4f8; border-radius:12px;"><a href="${note.file_url}" target="_blank">📄 파일 열기</a></div>`;
-            }
-        }
-        let link = note.link ? `<a href="${note.link}" target="_blank" style="display:flex; align-items:center; gap:8px; padding:14px; background:var(--bg); border-radius:12px; color:var(--main); text-decoration:none; margin-top:20px; font-weight:600;"><i class="ri-link"></i> ${note.link}</a>` : '';
-        c.innerHTML = `
-            <div style="display:flex; gap:10px; margin-bottom:15px; font-size:0.9rem; color:#888;"><span style="background:var(--sub); color:var(--main); padding:4px 10px; border-radius:8px; font-weight:700;">${catName[note.category]}</span><span>${note.folder}</span> · <span>${note.date}</span></div>
-            <h2 style="font-size:1.6rem; font-weight:800; margin-bottom:20px; line-height:1.3;">${note.title}</h2>
-            <div style="font-size:1.05rem; line-height:1.7; color:#444; white-space:pre-wrap;">${note.content}</div>
-            ${media}${link}
-            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:20px;">${note.tags.map(t=>`<span class="tag" style="font-size:0.8rem; color:var(--main); background:var(--bg); padding:4px 12px; border-radius:8px; font-weight:600;">${t}</span>`).join('')}</div>
-            <button class="full-btn" style="background:#eee; color:#333; margin-top:30px;" onclick="closeModal('detailModal'); openEditModal('${note.id}')">수정하기</button>
-        `;
-        document.getElementById('detailModal').style.display = 'flex';
-    }
-
-    function getGoogleDriveId(url) {
-        if (!url) return null;
-        let match = url.match(/[?&]id=([^&]+)/);
-        if (match) return match[1];
-        match = url.match(/\/d\/([^/]+)/);
-        if (match) return match[1];
-        return null;
-    }
-
+    function showLoader(s, t) { document.getElementById('loader').style.display = s ? 'flex' : 'none'; if(t) document.getElementById('loaderText').innerText = t; }
+    function showToast(m) { const t = document.createElement('div'); t.className='toast'; t.innerHTML=`<span>${m}</span>`; document.getElementById('toastContainer').appendChild(t); setTimeout(()=>t.remove(), 3000); }
+    function setTheme(t) { document.documentElement.setAttribute('data-theme', t); localStorage.setItem('theme', t); }
     function setCategory(c) { viewState.cat = c; document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.innerText.includes(catName[c]) || (c==='all' && b.innerText==='전체'))); refreshUI(); }
-    function setViewMode(m) { viewState.mode = m; document.querySelectorAll('.view-opts button').forEach(b => b.classList.toggle('active', (m === 'grid' && b.id === 'btnViewGrid') || (m === 'list' && b.id === 'btnViewList'))); refreshUI(); }
+    function setViewMode(m) { viewState.mode = m; document.querySelectorAll('.view-opts button').forEach(b => b.classList.toggle('active', (m==='grid' && b.id==='btnViewGrid') || (m==='list' && b.id==='btnViewList'))); refreshUI(); }
     function setSortMode(s) { viewState.sort = s; refreshUI(); }
-    function showLoader(show, text) { 
-        const el = document.getElementById('loader');
-        if(!el) return;
-        el.style.display = show ? 'flex' : 'none'; 
-        if(text) document.getElementById('loaderText').innerText = text; 
-    }
+    function switchSettingTab(t) { document.querySelectorAll('.setting-tab').forEach(x=>x.classList.remove('active')); document.querySelectorAll('.setting-content').forEach(x=>x.classList.remove('active')); document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.add('active'); document.getElementById('content'+t.charAt(0).toUpperCase()+t.slice(1)).classList.add('active'); }
+    function getGoogleDriveId(u) { if(!u) return null; let m = u.match(/[?&]id=([^&]+)/); if(m) return m[1]; m = u.match(/\/d\/([^/]+)/); if(m) return m[1]; return null; }
+    function updateDashboard() { document.getElementById('dashTotal').innerText = notes.length; document.getElementById('dashText').innerText = notes.filter(n=>n.category==='text').length; document.getElementById('dashLife').innerText = notes.filter(n=>n.category==='daily').length; document.getElementById('dashArt').innerText = notes.filter(n=>n.category==='art').length; }
+    function renderFolders() { const c = document.getElementById('foldersContainer'); c.innerHTML = `<span class="folder-chip ${viewState.folder==='all'?'active':''}" onclick="viewState.folder='all';renderFolders();refreshUI();">전체보기</span>` + customFolders.map(f => `<span class="folder-chip ${viewState.folder===f?'active':''}" onclick="viewState.folder='${f}';renderFolders();refreshUI();">${f}</span>`).join(''); }
+    function addFolder() { const n = document.getElementById('newFolderName').value.trim(); if(n && !customFolders.includes(n)) { customFolders.push(n); localStorage.setItem('inspirationFolders', JSON.stringify(customFolders)); document.getElementById('newFolderName').value=''; renderFolders(); } }
+    function openFolderManage() { renderManageFolders(); openModal('folderManageModal'); }
+    function renderManageFolders() { document.getElementById('manageFolderList').innerHTML = customFolders.map(f => `<div class="manage-folder-item"><span onclick="customFolders=customFolders.filter(x=>x!=='${f}');localStorage.setItem('inspirationFolders', JSON.stringify(customFolders));renderManageFolders();renderFolders();"><i class="ri-close-circle-fill"></i></span><b>${f}</b><span></span></div>`).join(''); }
+    function handleTagInput(e) { if(e.key==='Enter') { e.preventDefault(); addTag(e.target.value); } }
+    function handleTagComma(e) { if(e.target.value.includes(',')) { e.target.value.split(',').forEach(t=>addTag(t)); e.target.value=''; } }
+    function addTag(t) { const s = t.trim().replace(/^#/,''); if(s && !currentTags.includes('#'+s)) { currentTags.push('#'+s); renderTags(); } document.getElementById('realTagInput').value=''; }
+    function renderTags() { const c = document.getElementById('tagInputContainer'); const i = document.getElementById('realTagInput'); Array.from(c.children).forEach(x=>{if(x!==i)x.remove()}); currentTags.forEach((t,x)=>{ const s=document.createElement('span'); s.className='tag-block'; s.innerHTML=`${t} <i class="ri-close-line" onclick="currentTags.splice(${x},1);renderTags();"></i>`; c.insertBefore(s,i); }); }
+    function handleFileSelect(i) { const f=i.files[0]; if(!f) return; const r=new FileReader(); r.onload=(e)=>{ tempFile={name:f.name, type:f.type, data:e.target.result}; updateFileUI(f.name, f.type, e.target.result); }; r.readAsDataURL(f); }
+    function removeFile() { tempFile=null; document.getElementById('filePreviewArea').style.display='none'; document.getElementById('fileUploadBtn').style.display='flex'; }
+    function updateFileUI(n,t,d) { document.getElementById('fileUploadBtn').style.display='none'; document.getElementById('filePreviewArea').style.display='flex'; document.getElementById('uploadInfo').innerText=n; const g=document.getElementById('uploadImg'); if(t.startsWith('image/')){g.src=d; g.style.display='block';}else g.style.display='none'; }
+    function openEditModal(id) { const n=notes.find(x=>x.id===id); if(!n) return; openModal('writeModal'); document.getElementById('modalTitle').innerText="영감 수정 ✏️"; document.getElementById('editNoteId').value=id; document.getElementById('inputCategory').value=n.category; document.getElementById('folderSelect').value=n.folder; document.getElementById('inputTitle').value=n.title; document.getElementById('inputContent').value=n.content; document.getElementById('inputLink').value=n.link; currentTags=[...n.tags]; renderTags(); if(n.file_url) updateFileUI('기존 파일', 'image/', n.file_url); }
+    function openDetail(n) { const c=document.getElementById('detailContent'); let m=''; if(n.file_url) { if(n.file_url.startsWith('data:')) m=n.file_url.startsWith('data:image')?`<img src="${n.file_url}" style="width:100%; margin-top:15px; border-radius:12px;">` : ''; else { const d=getGoogleDriveId(n.file_url); m=d?`<iframe src="https://drive.google.com/file/d/${d}/preview" class="preview-frame"></iframe>`:`<a href="${n.file_url}" target="_blank">파일 보기</a>`; } } c.innerHTML=`<h2 style="font-weight:800">${n.title}</h2><p style="white-space:pre-wrap;">${n.content}</p>${m}`; document.getElementById('detailModal').style.display='flex'; }
+    function exportData() { if(notes.length===0) return; const b=new Blob([JSON.stringify(notes)],{type:'application/json'}); const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u; a.download='backup.json'; a.click(); }
+    function importData(i) { const f=i.files[0]; if(!f) return; const r=new FileReader(); r.onload=(e)=>{ notes=JSON.parse(e.target.result); saveToCache(notes); refreshUI(); alert("불러오기 완료"); }; r.readAsText(f); }
 </script>
 
 </body>
