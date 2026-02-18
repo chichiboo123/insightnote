@@ -22,13 +22,20 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: var(--font-main); background: var(--bg); color: var(--text); margin: 0; padding: 0; transition: background 0.3s ease; }
         
-        .app-container { max-width: 800px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; padding-bottom: 100px; position: relative; }
+        .app-container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column;
+            padding-bottom: 100px; 
+            position: relative; 
+        }
 
         .loader-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 9999; display: none; justify-content: center; align-items: center; flex-direction: column; }
         .loader { width: 45px; height: 45px; border: 4px solid #eee; border-top-color: var(--main); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* 헤더 */
         header { padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
         .app-title { font-size: 1.5rem; font-weight: 800; color: var(--main); display: flex; align-items: center; gap: 8px; cursor: pointer; }
         .header-actions { display: flex; gap: 12px; align-items: center; }
@@ -44,14 +51,12 @@
         .icon-btn:hover { color: var(--main); transform: scale(1.1); }
         .theme-select { padding: 6px 12px; border-radius: 20px; border: 1px solid var(--main); background: var(--card); color: var(--main); font-weight: 700; outline: none; cursor: pointer; }
 
-        /* 검색 */
         .search-area { padding: 0 24px 15px; flex-shrink: 0; }
         .search-wrapper { position: relative; display: flex; align-items: center; width: 100%; }
         .search-input { width: 100%; padding: 14px 20px 14px 45px; border-radius: 24px; border: none; background: var(--card); box-shadow: 0 4px 15px rgba(0,0,0,0.04); font-size: 1rem; outline: none; transition: var(--trans); }
         .search-input:focus { box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
         .search-icon { position: absolute; left: 16px; color: var(--main); font-size: 1.2rem; pointer-events: none; display: flex; align-items: center; height: 100%; top: 0; }
 
-        /* 대시보드 */
         .dashboard-area { padding: 5px 24px 20px; flex-shrink: 0; }
         .dashboard-card { background: var(--grad); border-radius: 20px; padding: 20px 24px; color: white; box-shadow: 0 8px 25px rgba(0,0,0,0.15); display: flex; justify-content: space-between; align-items: center; position: relative; overflow: hidden; gap: 15px; }
         .dash-total { font-size: 2.2rem; font-weight: 800; line-height: 1.2; }
@@ -75,11 +80,12 @@
         .view-opts button.active { background: var(--sub); color: var(--main); }
         .sort-select { padding: 8px 14px; border-radius: 14px; border: 1px solid var(--sub); background: var(--card); color: #555; font-size: 0.85rem; outline: none; cursor: pointer; appearance: none; font-weight: 600; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23999'%3e%3cpath d='M12 16L6 10H18L12 16Z'/%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 14px center; background-size: 20px; padding-right: 30px; }
 
-        /* 📋 리스트 뷰 디자인 (개선됨) */
         .grid-view { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        
+        /* 🔥 리스트 뷰 레이아웃 개선 */
         .list-view { display: flex; flex-direction: column; gap: 10px; }
         .list-item { 
-            display: flex; align-items: center; 
+            display: flex; align-items: flex-start; 
             background: var(--card); padding: 16px 20px; border-radius: 18px; 
             box-shadow: 0 2px 8px rgba(0,0,0,0.03); transition: var(--trans); 
             cursor: pointer; border: 1px solid transparent; 
@@ -87,20 +93,28 @@
             width: 100%;
         }
         .list-item:hover { transform: translateX(4px); border-color: var(--main); }
-        .list-item-left { display: flex; align-items: center; gap: 15px; flex: 1; min-width: 0; }
+        .list-item-left { display: flex; align-items: flex-start; gap: 15px; flex: 1; min-width: 0; }
         .list-icon { 
             width: 44px; height: 44px; border-radius: 14px; 
             background: var(--sub); color: var(--main); 
             display: flex; align-items: center; justify-content: center; 
-            font-size: 1.3rem; flex-shrink: 0; 
+            font-size: 1.3rem; flex-shrink: 0; margin-top: 2px;
         }
-        .list-content-wrap { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+        .list-content-wrap { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
         .list-title { font-size: 1.05rem; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .list-meta { font-size: 0.85rem; color: #888; display: flex; align-items: center; gap: 8px; }
+        
+        /* 리스트용 본문 미리보기 스타일 */
+        .list-preview { font-size: 0.9rem; color: #777; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
+        
+        .list-meta { font-size: 0.82rem; color: #999; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
         .list-meta .badge-text { font-weight: 800; color: var(--main); font-size: 0.75rem; }
-        .list-actions { display: flex; gap: 8px; flex-shrink: 0; }
+        
+        /* 리스트 내 태그 목록 */
+        .list-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 2px; }
+        .list-tag { font-size: 0.75rem; color: var(--main); opacity: 0.8; font-weight: 600; }
 
-        /* 카드 뷰 */
+        .list-actions { display: flex; gap: 8px; flex-shrink: 0; margin-top: 5px; }
+
         .card { background: var(--card); border-radius: 20px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); transition: var(--trans); cursor: pointer; border: 1px solid transparent; display: flex; flex-direction: column; height: 100%; position: relative; overflow: hidden; }
         .card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.08); }
         .card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--main); opacity: 0.8; }
@@ -112,7 +126,11 @@
         .card-content { font-size: 0.95rem; line-height: 1.6; color: #555; margin-bottom: 15px; white-space: pre-wrap; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; flex-grow: 1; }
         .card-preview { width: 100%; height: 160px; border-radius: 12px; margin-bottom: 15px; background: #f8f9fa; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 1px solid #eee; }
         .card-preview img { width: 100%; height: 100%; object-fit: cover; }
-        .card-actions { margin-top: 15px; padding-top: 15px; border-top: 1px solid #f0f0f0; display: flex; justify-content: flex-end; gap: 10px; }
+        
+        .card-link { display: flex; align-items: center; gap: 6px; margin-top: auto; font-size: 0.8rem; color: var(--main); font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 8px 12px; background: var(--bg); border-radius: 10px; margin-bottom: 10px; }
+        .card-tags { margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 5px; }
+
+        .card-actions { margin-top: 5px; padding-top: 15px; border-top: 1px solid #f0f0f0; display: flex; justify-content: flex-end; gap: 10px; }
         .action-btn { background: #f5f5f5; border: none; width: 36px; height: 36px; border-radius: 50%; color: #777; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--trans); }
         .action-btn:hover { background: var(--sub); color: var(--main); }
         .action-btn.del:hover { background: #fee; color: #e74c3c; }
@@ -121,7 +139,7 @@
         .empty-msg i { font-size: 5rem; margin-bottom: 20px; color: var(--main); opacity: 0.4; }
         .empty-msg p { font-size: 1.1rem; font-weight: 600; margin: 0; line-height: 1.5; }
 
-        /* 폼 요소 및 모달 디자인 복구 */
+        /* 모달 시스템 */
         .modal-wrap { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
         .modal-box { background: var(--card); width: 90%; max-width: 480px; border-radius: 24px; padding: 30px; max-height: 90vh; overflow-y: auto; animation: popIn 0.2s ease; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
         .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
@@ -130,43 +148,18 @@
         .form-group { margin-bottom: 18px; }
         .form-label { display: block; font-size: 0.9rem; font-weight: 700; color: #666; margin-bottom: 8px; }
         
-        /* 텍스트 입력창 스타일 */
-        .form-input { 
-            width: 100%; padding: 14px; border-radius: 14px; 
-            border: 1px solid var(--sub); background: var(--bg); 
-            font-size: 1rem; outline: none; font-family: var(--font-main); color: var(--text);
-            transition: all 0.2s;
-        }
+        .form-input { width: 100%; padding: 14px; border-radius: 14px; border: 1px solid var(--sub); background: var(--bg); font-size: 1rem; outline: none; font-family: var(--font-main); color: var(--text); transition: all 0.2s; }
         .form-input:focus { border-color: var(--main); background: #fff; box-shadow: 0 0 0 3px rgba(0,0,0,0.03); }
         textarea.form-input { height: 120px; resize: none; line-height: 1.5; }
         .full-btn { width: 100%; padding: 16px; border-radius: 16px; background: var(--main); color: white; border: none; font-size: 1.1rem; font-weight: 700; cursor: pointer; margin-top: 10px; }
 
-        /* 🔥 첨부파일 디자인 복구 */
-        .file-box { 
-            border: 1px dashed var(--main); background: var(--bg);
-            padding: 16px; border-radius: 14px; text-align: center; cursor: pointer; 
-            color: var(--main); transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px;
-            font-weight: 700; font-size: 0.95rem; flex-direction: column;
-            width: 100%;
-        }
-        .file-box:hover { background: #fff; border-style: solid; }
+        .file-box { border: 1px solid var(--sub); background: var(--bg); padding: 20px; border-radius: 14px; text-align: center; cursor: pointer; color: #888; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 600; font-size: 0.95rem; flex-direction: column; width: 100%; }
+        .file-box:hover { border-color: var(--main); color: var(--main); background: #fff; }
 
-        /* 🔥 해시태그 디자인 복구 */
-        .tag-container {
-            display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 14px;
-            border: 1px solid var(--sub); border-radius: 14px; background: var(--bg);
-            min-height: 48px; align-items: center; cursor: text;
-            transition: all 0.2s;
-        }
+        .tag-container { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 14px; border: 1px solid var(--sub); border-radius: 14px; background: var(--bg); min-height: 48px; align-items: center; cursor: text; transition: all 0.2s; }
         .tag-container:focus-within { border-color: var(--main); background: #fff; }
-        .tag-block {
-            background: var(--main); color: white; padding: 6px 12px; border-radius: 20px;
-            font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px;
-        }
-        .tag-input {
-            border: none; background: transparent; outline: none; flex-grow: 1;
-            font-family: var(--font-main); font-size: 0.95rem; min-width: 100px; color: var(--text);
-        }
+        .tag-block { background: var(--main); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+        .tag-input { border: none; background: transparent; outline: none; flex-grow: 1; font-family: var(--font-main); font-size: 0.95rem; min-width: 100px; color: var(--text); }
 
         .setting-tabs { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid var(--sub); }
         .setting-tab { padding: 10px 15px; cursor: pointer; font-weight: 700; color: #999; border-bottom: 2px solid transparent; margin-bottom: -2px; }
@@ -213,7 +206,7 @@
     <div class="search-area" id="searchContainer">
         <div class="search-wrapper">
             <div class="search-icon"><i class="ri-search-line"></i></div>
-            <input type="text" class="search-input" id="searchInput" name="main_search_input_field" placeholder="검색어 또는 #해시태그" autocomplete="new-password">
+            <input type="text" class="search-input" id="searchInput" name="main_search_input_unique" placeholder="검색어 또는 #해시태그" autocomplete="new-password">
         </div>
     </div>
 
@@ -245,7 +238,6 @@
 
     <div class="toolbar">
         <div class="view-opts">
-            <!-- stopPropagation 추가로 부모 상세이벤트 차단 -->
             <button class="active" id="btnViewGrid" onclick="event.stopPropagation(); setViewMode('grid')" title="카드형"><i class="ri-grid-fill"></i></button>
             <button id="btnViewList" onclick="event.stopPropagation(); setViewMode('list')" title="리스트형"><i class="ri-list-check"></i></button>
         </div>
@@ -263,7 +255,7 @@
 
 <div id="toastContainer" class="toast-container"></div>
 
-<!-- 모달 섹션 -->
+<!-- 폴더 관리 모달 -->
 <div class="modal-wrap" id="folderManageModal">
     <div class="modal-box">
         <div class="modal-head">
@@ -371,7 +363,7 @@
 <div class="modal-wrap" id="detailModal">
     <div class="modal-box">
         <div class="modal-head">
-            <span class="modal-title">상세 보기</span>
+            <span class="modal-title" id="detailModalHeaderTitle"></span>
             <button class="close-btn" onclick="closeModal('detailModal')"><i class="ri-close-line"></i></button>
         </div>
         <div id="detailContent"></div>
@@ -394,7 +386,6 @@
     const catIcon = { 'text': 'ri-text', 'daily': 'ri-cup-line', 'art': 'ri-palette-line' };
 
     document.addEventListener('DOMContentLoaded', () => {
-        // [수정] 검색창 URL 자동완성 원천 차단
         setTimeout(() => {
             const searchInput = document.getElementById('searchInput');
             if(searchInput) {
@@ -415,7 +406,6 @@
         document.getElementById('realTagInput').addEventListener('input', handleTagComma);
     });
 
-    // --- 초기화 로직 (새로고침 시 연동 유지 보장) ---
     function initApp() {
         webAppUrl = localStorage.getItem('inspirationNote_Url') || "";
         accessKey = localStorage.getItem('inspirationNote_Key') || "";
@@ -534,7 +524,24 @@
         showToast("오프라인 모드 시작");
     }
 
-    // --- 🖼️ UI 렌더링 (가독성 수정) ---
+    function getYoutubeId(url) {
+        if (!url) return null;
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
+    }
+
+    function filterByTag(tag) {
+        const searchInput = document.getElementById('searchInput');
+        if(searchInput) {
+            searchInput.value = tag;
+            viewState.search = tag;
+            closeModal('detailModal');
+            refreshUI();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+
     function refreshUI() {
         const container = document.getElementById('mainContent');
         if (!container) return;
@@ -544,7 +551,8 @@
             const matchCat = viewState.cat === 'all' || n.category === viewState.cat;
             const matchFolder = viewState.folder === 'all' || n.folder === viewState.folder;
             const term = viewState.search.toLowerCase();
-            return matchCat && matchFolder && (!viewState.search || n.title.toLowerCase().includes(term) || (n.tags||[]).join(' ').toLowerCase().includes(term));
+            const matchSearch = !viewState.search || n.title.toLowerCase().includes(term) || (n.tags || []).some(t => t.toLowerCase().includes(term));
+            return matchCat && matchFolder && matchSearch;
         });
 
         list.sort((a, b) => (viewState.sort === 'date-desc' ? b.id - a.id : a.title.localeCompare(b.title)));
@@ -561,26 +569,39 @@
                 const tagsHTML = (note.tags || []).map(t => `<span class="tag" style="font-size:0.75rem; color:var(--main); background:var(--bg); padding:4px 10px; border-radius:8px; font-weight:600; margin-right:5px;">${t}</span>`).join('');
                 
                 let preview = '';
-                if(viewState.mode === 'grid' && note.file_url) {
-                    if (note.file_url.startsWith('data:image')) preview = `<div class="card-preview"><img src="${note.file_url}"></div>`;
-                    else {
+                if(viewState.mode === 'grid') {
+                    if (note.file_url && note.file_url.startsWith('data:image')) {
+                        preview = `<div class="card-preview"><img src="${note.file_url}"></div>`;
+                    } else if (note.file_url) {
                         const driveId = getGoogleDriveId(note.file_url);
                         if (driveId) preview = `<div class="card-preview"><img src="https://drive.google.com/thumbnail?sz=w500&id=${driveId}" style="width:100%; height:100%; object-fit:cover;"></div>`;
                     }
                 }
 
+                let linkLabel = '';
+                if (note.link) {
+                    const isYT = getYoutubeId(note.link);
+                    linkLabel = `<div class="card-link"><i class="${isYT ? 'ri-youtube-fill' : 'ri-link'}"></i> ${note.link}</div>`;
+                }
+
                 if (viewState.mode === 'grid') {
                     el.className = 'card';
-                    el.innerHTML = `<div class="card-meta"><div><span class="badge badge-cat">${engCat}</span><span class="badge badge-folder">${note.folder}</span></div><span>${note.date}</span></div><div class="card-title">${note.title}</div><div class="card-content">${note.content}</div>${preview}<div class="card-tags">${tagsHTML}</div><div class="card-actions" onclick="event.stopPropagation()"><button class="action-btn" onclick="openEditModal('${note.id}')"><i class="ri-edit-line"></i></button><button class="action-btn del" onclick="deleteNote('${note.id}')"><i class="ri-delete-bin-line"></i></button></div>`;
+                    el.innerHTML = `<div class="card-meta"><div><span class="badge badge-cat">${engCat}</span><span class="badge badge-folder">${note.folder}</span></div><span>${note.date}</span></div><div class="card-title">${note.title}</div><div class="card-content">${note.content}</div>${preview}${linkLabel}<div class="card-tags">${tagsHTML}</div><div class="card-actions" onclick="event.stopPropagation()"><button class="action-btn" onclick="event.stopPropagation(); openEditModal('${note.id}')"><i class="ri-edit-line"></i></button><button class="action-btn del" onclick="event.stopPropagation(); deleteNote('${note.id}')"><i class="ri-delete-bin-line"></i></button></div>`;
                 } else {
-                    // 🔥 리스트 디자인 레이아웃 수정
+                    // 🔥 리스트형 개선: 본문 미리보기 및 해시태그 추가
+                    const listTagsHTML = (note.tags || []).map(t => `<span class="list-tag">${t}</span>`).join('');
                     el.className = 'list-item';
                     el.innerHTML = `
                         <div class="list-item-left">
                             <div class="list-icon"><i class="${cIcon}"></i></div>
                             <div class="list-content-wrap">
                                 <div class="list-title">${note.title}</div>
-                                <div class="list-meta"><span class="badge-text">${engCat}</span> · ${note.folder} · ${note.date}</div>
+                                <div class="list-preview">${note.content}</div>
+                                <div class="list-meta">
+                                    <span class="badge-text">${engCat}</span> · ${note.folder} · ${note.date}
+                                    ${note.link ? '· <i class="ri-link" style="font-size:0.7rem"></i>' : ''}
+                                </div>
+                                <div class="list-tags">${listTagsHTML}</div>
                             </div>
                         </div>
                         <div class="list-actions" onclick="event.stopPropagation()">
@@ -664,24 +685,42 @@
     function addTag(t) { const s = t.trim().replace(/^#/,''); if(s && !currentTags.includes('#'+s)) { currentTags.push('#'+s); renderTags(); } document.getElementById('realTagInput').value=''; }
     function renderTags() { const c = document.getElementById('tagInputContainer'); const i = document.getElementById('realTagInput'); Array.from(c.children).forEach(x=>{if(x!==i)x.remove()}); currentTags.forEach((t,x)=>{ const s=document.createElement('span'); s.className='tag-block'; s.innerHTML=`${t} <i class="ri-close-line" onclick="currentTags.splice(${x},1);renderTags();"></i>`; c.insertBefore(s,i); }); }
     function handleFileSelect(i) { const f=i.files[0]; if(!f) return; const r=new FileReader(); r.onload=(e)=>{ tempFile={name:f.name, type:f.type, data:e.target.result}; updateFileUI(f.name, f.type, e.target.result); }; r.readAsDataURL(f); }
-    function removeFile() { tempFile=null; document.getElementById('filePreviewArea').style.display='none'; document.getElementById('fileUploadBtn').style.display='flex'; }
+    function removeFile() { tempFile=null; document.getElementById('inputFile').value=""; document.getElementById('filePreviewArea').style.display='none'; document.getElementById('fileUploadBtn').style.display='flex'; }
     function updateFileUI(n,t,d) { document.getElementById('fileUploadBtn').style.display='none'; const area=document.getElementById('filePreviewArea'); area.style.display='flex'; document.getElementById('uploadInfo').innerText=n; const g=document.getElementById('uploadImg'); if(t.startsWith('image/')){g.src=d; g.style.display='block';}else g.style.display='none'; }
-    function openEditModal(id) { const n=notes.find(x=>x.id===id); if(!n) return; openModal('writeModal'); document.getElementById('modalTitle').innerText="영감 수정 ✏️"; document.getElementById('editNoteId').value=id; document.getElementById('inputCategory').value=n.category; document.getElementById('folderSelect').value=n.folder; document.getElementById('inputTitle').value=n.title; document.getElementById('inputContent').value=n.content; document.getElementById('inputLink').value=n.link; currentTags=[...n.tags]; renderTags(); if(n.file_url) updateFileUI('기존 파일', 'image/', n.file_url); }
+    function openEditModal(id) { const n=notes.find(x=>x.id===id); if(!n) return; openModal('writeModal'); document.getElementById('modalTitle').innerText="영감 수정 ✏️"; document.getElementById('editNoteId').value=id; document.getElementById('inputCategory').value=n.category; document.getElementById('folderSelect').value=n.folder; document.getElementById('inputTitle').value=n.title; document.getElementById('inputContent').value=n.content; document.getElementById('inputLink').value=n.link; currentTags=[...n.tags]; renderTags(); if(n.file_url) updateFileUI('기존 파일', n.file_url.startsWith('data:image')?'image/':'', n.file_url); }
+    
     function openDetail(n) { 
         const c = document.getElementById('detailContent'); 
-        let m = ''; 
+        let mediaArea = ''; 
         if(n.file_url) { 
-            if(n.file_url.startsWith('data:')) m=n.file_url.startsWith('data:image')?`<img src="${n.file_url}" style="width:100%; margin-top:15px; border-radius:12px;">` : ''; 
-            else { 
+            if(n.file_url.startsWith('data:')) {
+                mediaArea += n.file_url.startsWith('data:image') ? `<img src="${n.file_url}" style="width:100%; margin-top:20px; border-radius:15px; box-shadow:0 4px 15px rgba(0,0,0,0.05);">` : ''; 
+            } else { 
                 const d=getGoogleDriveId(n.file_url); 
-                m=d?`<iframe src="https://drive.google.com/file/d/${d}/preview" style="width:100%; height:450px; border-radius:15px; border:none; margin-top:15px;"></iframe>`:`<a href="${n.file_url}" target="_blank">파일 보기</a>`; 
+                mediaArea += d ? `<iframe src="https://drive.google.com/file/d/${d}/preview" style="width:100%; height:450px; border-radius:15px; border:1px solid #eee; margin-top:20px;"></iframe>` : `<div style="margin-top:15px; padding:15px; background:var(--sub); border-radius:12px;"><a href="${n.file_url}" target="_blank" style="color:var(--main); font-weight:700; text-decoration:none;"><i class="ri-file-line"></i> 파일 보기</a></div>`; 
             } 
-        } 
-        c.innerHTML=`<h2 style="font-weight:800; margin-top:0;">${n.title}</h2><p style="white-space:pre-wrap; line-height:1.6; color:#444;">${n.content}</p>${m}`; 
+        }
+        let linkArea = '';
+        if (n.link) {
+            const ytId = getYoutubeId(n.link);
+            if (ytId) linkArea = `<div style="margin-top:20px;"><iframe width="100%" height="250" src="https://www.youtube.com/embed/${ytId}" frameborder="0" allowfullscreen style="border-radius:15px;"></iframe></div>`;
+            linkArea += `<a href="${n.link}" target="_blank" style="display:block; padding:15px; background:#f8f9fa; border-radius:12px; margin-top:12px; color:#555; text-decoration:none; font-size:0.9rem; overflow:hidden; text-overflow:ellipsis;"><i class="ri-link"></i> ${n.link}</a>`;
+        }
+        c.innerHTML = `
+            <h2 style="font-weight:800; margin-top:0; line-height:1.4; font-size:1.6rem; color:var(--text);">${n.title}</h2>
+            <div style="font-size:0.9rem; color:#888; margin-bottom:20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+                <span style="font-weight:700; color:var(--main);">${catName[n.category]}</span> · <span>${n.folder}</span> · <span>${n.date}</span>
+            </div>
+            <div style="white-space:pre-wrap; line-height:1.8; color:#444; font-size:1.05rem; min-height: 100px;">${n.content}</div>
+            ${linkArea}${mediaArea}
+            <div style="margin-top:25px; display:flex; gap:8px; flex-wrap:wrap;">
+                ${n.tags.map(t=>`<span onclick="filterByTag('${t}')" style="padding:8px 16px; background:var(--bg); color:var(--main); border-radius:12px; font-size:0.85rem; font-weight:700; cursor:pointer; transition:var(--trans); border:1.5px solid transparent;" onmouseover="this.style.borderColor='var(--main)'" onmouseout="this.style.borderColor='transparent'">${t}</span>`).join('')}
+            </div>
+        `; 
         document.getElementById('detailModal').style.display='flex'; 
     }
-    function exportData() { if(notes.length===0) return; const b=new Blob([JSON.stringify(notes)],{type:'application/json'}); const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u; a.download='backup.json'; a.click(); }
-    function importData(i) { const f=i.files[0]; if(!f) return; const r=new FileReader(); r.onload=(e)=>{ try { notes=JSON.parse(e.target.result); saveToCache(notes); refreshUI(); alert("복구 완료"); } catch(e) { alert("오류"); } }; r.readAsText(f); }
+    function exportData() { if(notes.length===0) return; const b=new Blob([JSON.stringify(notes,null,2)],{type:'application/json'}); const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u; a.download='inspiration_backup.json'; a.click(); }
+    function importData(i) { const f=i.files[0]; if(!f) return; const r=new FileReader(); r.onload=(e)=>{ try { notes=JSON.parse(e.target.result); saveToCache(notes); refreshUI(); alert("데이터 복구 완료!"); } catch(e) { alert("오류"); } }; r.readAsText(f); }
 </script>
 
 </body>
