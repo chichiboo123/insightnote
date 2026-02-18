@@ -7,9 +7,12 @@
     
     <!-- 폰트: Pretendard Gov -->
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-gov.min.css" />
-    <!-- 아이콘: Remix Icon & Google Material Symbols (Light) -->
+    <!-- 파비콘: Material Symbol light (#255290) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%23255290' d='M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7zm2.85 11.1l-.85.6V16h-4v-2.3l-.85-.6C7.8 12.16 7 10.63 7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.63-.8 3.16-2.15 4.1z'/></svg>">
+    <!-- 아이콘: Remix Icon & Google Material Symbols -->
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=light" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=ev_shadow" />
 
     <style>
         /* 🎨 디자인 토큰 및 테마 설정 */
@@ -135,6 +138,7 @@
 
         .empty-msg { margin: auto; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; color: #aaa; width: 100%; grid-column: 1 / -1; }
         .empty-msg i { font-size: 5rem; margin-bottom: 20px; color: var(--main); opacity: 0.4; }
+        .empty-msg .material-symbols-outlined { font-size: 5rem; margin-bottom: 20px; color: var(--main); opacity: 0.4; }
         .empty-msg p { font-size: 1.1rem; font-weight: 600; margin: 0; line-height: 1.5; }
 
         /* 모달 시스템 */
@@ -308,7 +312,7 @@
 <div class="modal-wrap" id="writeModal">
     <div class="modal-box">
         <div class="modal-head">
-            <span class="modal-title" id="modalTitle">새로운 영감 🌱</span>
+            <span class="modal-title" id="modalTitle"><span class="material-symbols-outlined" style="font-size:1.4rem;color:var(--main);">light</span> 새로운 영감</span>
             <button class="close-btn" onclick="closeModal('writeModal')"><i class="ri-close-line"></i></button>
         </div>
         <input type="hidden" id="editNoteId">
@@ -534,22 +538,44 @@
         const url = document.getElementById('settingUrlInput').value.trim();
         const key = document.getElementById('settingKeyInput').value.trim();
         if(!url || !key) return alert("URL과 비밀번호를 입력하세요.");
-        
-        showLoader(true, "서버 테스트 중...");
+
+        showLoader(true, "서버 연결 테스트 중...");
         try {
             const params = new URLSearchParams({ action: 'read', key: key, t: Date.now() });
             const res = await fetch(`${url}?${params.toString()}`, { redirect: "follow" });
-            const json = await res.json();
+
+            // 응답이 JSON인지 확인 (GAS가 HTML 인증 페이지를 반환하는 경우 방어)
+            let json;
+            try {
+                json = await res.json();
+            } catch(parseErr) {
+                console.error('[영감노트] GAS 응답 파싱 실패 (JSON이 아님):', parseErr);
+                alert("연동 실패: 서버가 올바른 응답을 반환하지 않습니다.\n\n[해결방법] Google Apps Script 배포 설정을 확인하세요:\n· 실행 계정: 나(내 계정)\n· 액세스 권한: 모든 사용자(익명 포함)\n· 코드 수정 후 '새 배포'를 생성했는지 확인");
+                return;
+            }
+
             if(json.status === 'success') {
                 localStorage.setItem('inspirationNote_Url', url);
                 localStorage.setItem('inspirationNote_Key', key);
                 localStorage.removeItem('inspirationNote_Offline');
                 webAppUrl = url; accessKey = key; isOfflineMode = false;
-                alert("연결 성공!");
+                alert("연결 성공! ✓");
                 closeModal('settingsModal');
                 initApp();
-            } else { alert("비밀번호 오류입니다."); }
-        } catch (e) { alert("연동 실패: URL을 확인하세요."); }
+            } else if(json.message && json.message.includes('키')) {
+                alert("비밀번호 오류입니다. 액세스 키를 확인해주세요.");
+            } else {
+                console.error('[영감노트] GAS 오류 응답:', json);
+                alert(`연동 실패: ${json.message || '알 수 없는 오류'}`);
+            }
+        } catch (e) {
+            console.error('[영감노트] 연결 오류 (브라우저 콘솔 F12에서 확인):', e);
+            if(e instanceof TypeError) {
+                alert("연동 실패: 네트워크 오류 또는 CORS 차단\n\n[해결방법]\n1. GAS 웹앱 URL이 정확한지 확인\n2. GAS 배포 설정: 실행계정=나, 액세스=모든 사용자\n3. 브라우저 콘솔(F12)에서 상세 오류 확인");
+            } else {
+                alert(`연동 실패: ${e.message || 'URL을 확인하세요.'}\n브라우저 콘솔(F12)에서 자세한 오류를 확인하세요.`);
+            }
+        }
         finally { showLoader(false); }
     }
 
@@ -603,7 +629,7 @@
 
         if (list.length === 0) {
             container.className = 'content-area';
-            container.innerHTML = `<div class="empty-msg"><i class="ri-seedling-line"></i><p>표시할 영감이 없습니다.</p></div>`;
+            container.innerHTML = `<div class="empty-msg"><span class="material-symbols-outlined">ev_shadow</span><p>표시할 영감이 없습니다.</p></div>`;
         } else {
             container.className = viewState.mode === 'grid' ? 'content-area grid-view' : 'content-area list-view';
             list.forEach(note => {
@@ -693,11 +719,18 @@
         }
     }
 
-    function deleteNote(id) {
-        if(!confirm("삭제하시겠습니까?")) return;
-        notes = notes.filter(n => n.id !== id);
+    async function deleteNote(id) {
+        if(!confirm("영구 삭제하시겠습니까?")) return;
+        const targetId = String(id);
+        notes = notes.filter(n => n.id !== targetId);
         saveToCache(notes); refreshUI();
-        if(!isOfflineMode) fetch(webAppUrl, { method: 'POST', body: JSON.stringify({ action: 'delete', id: id, key: accessKey }), headers: { 'Content-Type': 'text/plain' } });
+        if(!isOfflineMode && webAppUrl) {
+            try {
+                const res = await fetch(webAppUrl, { method: 'POST', body: JSON.stringify({ action: 'delete', id: targetId, key: accessKey }), headers: { 'Content-Type': 'text/plain' }, redirect: 'follow' });
+                const json = await res.json();
+                if(json.status === 'success') showToast('서버에서 삭제되었습니다.');
+            } catch(e) { showToast('서버 삭제 중 오류 발생'); }
+        }
     }
 
     function setViewMode(m) { 
@@ -711,6 +744,7 @@
     function openModal(id) {
         document.getElementById(id).style.display = 'flex';
         if (id === 'writeModal') {
+            document.getElementById('modalTitle').innerHTML = '<span class="material-symbols-outlined" style="font-size:1.4rem;color:var(--main);">light</span> 새로운 영감';
             document.getElementById('folderSelect').innerHTML = customFolders.map(f => `<option value="${f}">${f}</option>`).join('') + '<option value="기타">기타</option>';
             document.getElementById('editNoteId').value = "";
             document.querySelectorAll('#writeModal .form-input').forEach(i => i.value = "");
@@ -770,7 +804,7 @@
     function handleFileSelect(i) { const f=i.files[0]; if(!f) return; const r=new FileReader(); r.onload=(e)=>{ tempFile={name:f.name, type:f.type, data:e.target.result}; updateFileUI(f.name, f.type, e.target.result); }; r.readAsDataURL(f); }
     function removeFile() { tempFile=null; document.getElementById('filePreviewArea').style.display='none'; document.getElementById('fileUploadBtn').style.display='flex'; }
     function updateFileUI(n,t,d) { document.getElementById('fileUploadBtn').style.display='none'; const area=document.getElementById('filePreviewArea'); area.style.display='flex'; document.getElementById('uploadInfo').innerText=n; const g=document.getElementById('uploadImg'); if(t.startsWith('image/')){g.src=d; g.style.display='block';}else g.style.display='none'; }
-    function openEditModal(id) { const n=notes.find(x=>x.id===id); if(!n) return; openModal('writeModal'); document.getElementById('modalTitle').innerText="영감 수정 ✏️"; document.getElementById('editNoteId').value=id; document.getElementById('inputCategory').value=n.category; document.getElementById('folderSelect').value=n.folder; document.getElementById('inputTitle').value=n.title; document.getElementById('inputContent').value=n.content || ''; document.getElementById('inputLink').value=n.link || ''; currentTags=[...(n.tags||[])]; renderTags(); if(n.file_url) updateFileUI('기존 파일', n.file_url.startsWith('data:image')?'image/':'', n.file_url); }
+    function openEditModal(id) { const n=notes.find(x=>x.id===id); if(!n) return; openModal('writeModal'); document.getElementById('modalTitle').innerHTML="✏️ 영감 수정"; document.getElementById('editNoteId').value=id; document.getElementById('inputCategory').value=n.category; document.getElementById('folderSelect').value=n.folder; document.getElementById('inputTitle').value=n.title; document.getElementById('inputContent').value=n.content || ''; document.getElementById('inputLink').value=n.link || ''; currentTags=[...(n.tags||[])]; renderTags(); if(n.file_url) updateFileUI('기존 파일', n.file_url.startsWith('data:image')?'image/':'', n.file_url); }
     
     function openDetail(n) { 
         const c = document.getElementById('detailContent'); 
