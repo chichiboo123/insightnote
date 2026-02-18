@@ -10,14 +10,14 @@ const FOLDER_NAME = '영감노트_파일';
 
 // 비밀번호는 스크립트 속성(Script Properties)에 ACCESS_KEY 키로 저장하세요.
 // (스크립트 편집기 → 프로젝트 설정 → 스크립트 속성)
-// 속성이 없으면 아래 기본값을 사용합니다 (배포 전 반드시 변경).
 const ACCESS_KEY = PropertiesService.getScriptProperties()
                     .getProperty('ACCESS_KEY') || 'changeme';
 
-// 컬럼 순서 정의 — 변경 시 이 배열만 수정하면 됩니다
+// 컬럼 순서 — 스프레드시트 실제 순서와 일치
+// id | category | folder | title | content | link | file_url | tags | date | created_at
 const SHEET_HEADERS = [
   'id', 'category', 'folder', 'title', 'content',
-  'link', 'tags', 'date', 'created_at', 'file_url'
+  'link', 'file_url', 'tags', 'date', 'created_at'
 ];
 
 
@@ -119,8 +119,9 @@ function handleRead() {
     // ID가 없는 빈 행 제거
     .filter(row => row[0] !== '' && row[0] !== null && row[0] !== undefined)
     .map(row => {
+      // 컬럼 순서: id(0) category(1) folder(2) title(3) content(4) link(5) file_url(6) tags(7) date(8) created_at(9)
       let tags = [];
-      try { tags = row[6] ? JSON.parse(row[6]) : []; } catch (e) { tags = []; }
+      try { tags = row[7] ? JSON.parse(row[7]) : []; } catch (e) { tags = []; }
 
       return {
         id:         String(row[0] || ''),
@@ -129,10 +130,10 @@ function handleRead() {
         title:      String(row[3] || ''),
         content:    String(row[4] || ''),
         link:       String(row[5] || ''),
+        file_url:   String(row[6] || ''),
         tags:       tags,
-        date:       String(row[7] || ''),
-        created_at: row[8] ? Number(row[8]) : 0,
-        file_url:   String(row[9] || '')
+        date:       String(row[8] || ''),
+        created_at: row[9] ? Number(row[9]) : 0
       };
     });
 
@@ -148,6 +149,7 @@ function handleCreate(data) {
     const sheet   = getSheet();
     const fileUrl = uploadFileIfPresent(data.file);
 
+    // 컬럼 순서: id | category | folder | title | content | link | file_url | tags | date | created_at
     sheet.appendRow([
       String(data.id         || String(Date.now())),
       String(data.category   || ''),
@@ -155,10 +157,10 @@ function handleCreate(data) {
       String(data.title      || ''),
       String(data.content    || ''),
       String(data.link       || ''),
+      fileUrl,
       JSON.stringify(data.tags || []),
       String(data.date       || ''),
-      Number(data.created_at || Date.now()),
-      fileUrl
+      Number(data.created_at || Date.now())
     ]);
 
     Logger.log('생성 완료 — ID: ' + data.id);
@@ -191,14 +193,15 @@ function handleUpdate(data) {
       return responseJSON({ status: 'error', message: '해당 ID의 메모를 찾을 수 없습니다.' });
     }
 
-    // 파일: 새 파일이 있으면 업로드, 없으면 기존 URL 유지
+    // 파일: 새 파일이 있으면 업로드, 없으면 기존 URL 유지 (file_url = 7번째 컬럼)
     let fileUrl;
     if (data.file && data.file.data) {
       fileUrl = uploadFileIfPresent(data.file);
     } else {
-      fileUrl = String(sheet.getRange(rowIndex, 10).getValue() || '');
+      fileUrl = String(sheet.getRange(rowIndex, 7).getValue() || '');
     }
 
+    // 컬럼 순서: id | category | folder | title | content | link | file_url | tags | date | created_at
     sheet.getRange(rowIndex, 1, 1, SHEET_HEADERS.length).setValues([[
       String(data.id         || ''),
       String(data.category   || ''),
@@ -206,10 +209,10 @@ function handleUpdate(data) {
       String(data.title      || ''),
       String(data.content    || ''),
       String(data.link       || ''),
+      fileUrl,
       JSON.stringify(data.tags || []),
       String(data.date       || ''),
-      Number(data.created_at || 0),
-      fileUrl
+      Number(data.created_at || 0)
     ]]);
 
     Logger.log('수정 완료 — ID: ' + targetId + ' (행: ' + rowIndex + ')');
