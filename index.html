@@ -7,9 +7,12 @@
     
     <!-- 폰트: Pretendard Gov -->
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-gov.min.css" />
-    <!-- 아이콘: Remix Icon & Google Material Symbols (Light) -->
+    <!-- 파비콘: Material Symbol light (#255290) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%23255290' d='M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7zm2.85 11.1l-.85.6V16h-4v-2.3l-.85-.6C7.8 12.16 7 10.63 7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.63-.8 3.16-2.15 4.1z'/></svg>">
+    <!-- 아이콘: Remix Icon & Google Material Symbols -->
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=light" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=ev_shadow" />
 
     <style>
         /* 🎨 디자인 토큰 및 테마 설정 */
@@ -135,6 +138,7 @@
 
         .empty-msg { margin: auto; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; color: #aaa; width: 100%; grid-column: 1 / -1; }
         .empty-msg i { font-size: 5rem; margin-bottom: 20px; color: var(--main); opacity: 0.4; }
+        .empty-msg .material-symbols-outlined { font-size: 5rem; margin-bottom: 20px; color: var(--main); opacity: 0.4; }
         .empty-msg p { font-size: 1.1rem; font-weight: 600; margin: 0; line-height: 1.5; }
 
         /* 모달 시스템 */
@@ -308,7 +312,7 @@
 <div class="modal-wrap" id="writeModal">
     <div class="modal-box">
         <div class="modal-head">
-            <span class="modal-title" id="modalTitle">새로운 영감 🌱</span>
+            <span class="modal-title" id="modalTitle"><span class="material-symbols-outlined" style="font-size:1.4rem;color:var(--main);">light</span> 새로운 영감</span>
             <button class="close-btn" onclick="closeModal('writeModal')"><i class="ri-close-line"></i></button>
         </div>
         <input type="hidden" id="editNoteId">
@@ -625,7 +629,7 @@
 
         if (list.length === 0) {
             container.className = 'content-area';
-            container.innerHTML = `<div class="empty-msg"><i class="ri-seedling-line"></i><p>표시할 영감이 없습니다.</p></div>`;
+            container.innerHTML = `<div class="empty-msg"><span class="material-symbols-outlined">ev_shadow</span><p>표시할 영감이 없습니다.</p></div>`;
         } else {
             container.className = viewState.mode === 'grid' ? 'content-area grid-view' : 'content-area list-view';
             list.forEach(note => {
@@ -740,6 +744,7 @@
     function openModal(id) {
         document.getElementById(id).style.display = 'flex';
         if (id === 'writeModal') {
+            document.getElementById('modalTitle').innerHTML = '<span class="material-symbols-outlined" style="font-size:1.4rem;color:var(--main);">light</span> 새로운 영감';
             document.getElementById('folderSelect').innerHTML = customFolders.map(f => `<option value="${f}">${f}</option>`).join('') + '<option value="기타">기타</option>';
             document.getElementById('editNoteId').value = "";
             document.querySelectorAll('#writeModal .form-input').forEach(i => i.value = "");
@@ -799,7 +804,7 @@
     function handleFileSelect(i) { const f=i.files[0]; if(!f) return; const r=new FileReader(); r.onload=(e)=>{ tempFile={name:f.name, type:f.type, data:e.target.result}; updateFileUI(f.name, f.type, e.target.result); }; r.readAsDataURL(f); }
     function removeFile() { tempFile=null; document.getElementById('filePreviewArea').style.display='none'; document.getElementById('fileUploadBtn').style.display='flex'; }
     function updateFileUI(n,t,d) { document.getElementById('fileUploadBtn').style.display='none'; const area=document.getElementById('filePreviewArea'); area.style.display='flex'; document.getElementById('uploadInfo').innerText=n; const g=document.getElementById('uploadImg'); if(t.startsWith('image/')){g.src=d; g.style.display='block';}else g.style.display='none'; }
-    function openEditModal(id) { const n=notes.find(x=>x.id===id); if(!n) return; openModal('writeModal'); document.getElementById('modalTitle').innerText="영감 수정 ✏️"; document.getElementById('editNoteId').value=id; document.getElementById('inputCategory').value=n.category; document.getElementById('folderSelect').value=n.folder; document.getElementById('inputTitle').value=n.title; document.getElementById('inputContent').value=n.content || ''; document.getElementById('inputLink').value=n.link || ''; currentTags=[...(n.tags||[])]; renderTags(); if(n.file_url) updateFileUI('기존 파일', n.file_url.startsWith('data:image')?'image/':'', n.file_url); }
+    function openEditModal(id) { const n=notes.find(x=>x.id===id); if(!n) return; openModal('writeModal'); document.getElementById('modalTitle').innerHTML="✏️ 영감 수정"; document.getElementById('editNoteId').value=id; document.getElementById('inputCategory').value=n.category; document.getElementById('folderSelect').value=n.folder; document.getElementById('inputTitle').value=n.title; document.getElementById('inputContent').value=n.content || ''; document.getElementById('inputLink').value=n.link || ''; currentTags=[...(n.tags||[])]; renderTags(); if(n.file_url) updateFileUI('기존 파일', n.file_url.startsWith('data:image')?'image/':'', n.file_url); }
     
     function openDetail(n) { 
         const c = document.getElementById('detailContent'); 
