@@ -53,7 +53,7 @@
 
         .search-area { padding: 0 24px 15px; flex-shrink: 0; }
         .search-wrapper { position: relative; display: flex; align-items: center; width: 100%; }
-        /* name="main_search" 추가 및 autocomplete="new-password" (일부 브라우저에서 off보다 강력함) 적용 */
+        /* URL 자동완성 방지를 위해 name과 autocomplete 속성 강화 */
         .search-input { width: 100%; padding: 14px 20px 14px 45px; border-radius: 24px; border: none; background: var(--card); box-shadow: 0 4px 15px rgba(0,0,0,0.04); font-size: 1rem; outline: none; transition: var(--trans); }
         .search-input:focus { box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
         .search-icon { position: absolute; left: 16px; color: var(--main); font-size: 1.2rem; pointer-events: none; display: flex; align-items: center; height: 100%; top: 0; }
@@ -77,18 +77,35 @@
 
         .toolbar { padding: 10px 24px 20px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
         .view-opts { display: flex; background: var(--card); border-radius: 12px; padding: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
-        .view-opts button { border: none; padding: 6px 10px; border-radius: 8px; background: transparent; color: #999; cursor: pointer; font-size: 1.1rem; }
+        .view-opts button { border: none; padding: 6px 12px; border-radius: 8px; background: transparent; color: #999; cursor: pointer; font-size: 1.1rem; }
         .view-opts button.active { background: var(--sub); color: var(--main); }
         .sort-select { padding: 8px 14px; border-radius: 14px; border: 1px solid var(--sub); background: var(--card); color: #555; font-size: 0.85rem; outline: none; cursor: pointer; appearance: none; font-weight: 600; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23999'%3e%3cpath d='M12 16L6 10H18L12 16Z'/%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 14px center; background-size: 20px; padding-right: 30px; }
 
         .grid-view { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-        .list-view { display: flex; flex-direction: column; gap: 12px; }
-        .list-item { display: flex; align-items: center; background: var(--card); padding: 16px 20px; border-radius: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); transition: var(--trans); cursor: pointer; border: 1px solid transparent; justify-content: space-between; gap: 15px; }
-        .list-item:hover { transform: translateX(4px); border-color: var(--main); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
-        .list-icon { width: 42px; height: 42px; border-radius: 12px; background: var(--sub); color: var(--main); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
-        .list-text-wrap { display: flex; flex-direction: column; gap: 2px; overflow: hidden; }
+        
+        /* 🔥 리스트형 가독성 대폭 수정 */
+        .list-view { display: flex; flex-direction: column; gap: 10px; }
+        .list-item { 
+            display: flex; align-items: center; 
+            background: var(--card); padding: 14px 18px; border-radius: 18px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03); transition: var(--trans); 
+            cursor: pointer; border: 1px solid transparent; 
+            justify-content: space-between; gap: 15px;
+            width: 100%;
+        }
+        .list-item:hover { transform: translateX(4px); border-color: var(--main); }
+        .list-item-left { display: flex; align-items: center; gap: 15px; flex: 1; min-width: 0; }
+        .list-icon { 
+            width: 44px; height: 44px; border-radius: 14px; 
+            background: var(--sub); color: var(--main); 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 1.3rem; flex-shrink: 0; 
+        }
+        .list-content-wrap { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
         .list-title { font-size: 1.05rem; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .list-meta { font-size: 0.85rem; color: #888; white-space: nowrap; }
+        .list-meta { font-size: 0.85rem; color: #888; display: flex; align-items: center; gap: 8px; }
+        .list-meta .badge-text { font-weight: 800; color: var(--main); font-size: 0.75rem; }
+        .list-actions { display: flex; gap: 8px; flex-shrink: 0; }
 
         .card { background: var(--card); border-radius: 20px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); transition: var(--trans); cursor: pointer; border: 1px solid transparent; display: flex; flex-direction: column; height: 100%; position: relative; overflow: hidden; }
         .card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.08); }
@@ -122,12 +139,6 @@
         textarea.form-input { height: 120px; resize: none; line-height: 1.5; }
         .full-btn { width: 100%; padding: 16px; border-radius: 16px; background: var(--main); color: white; border: none; font-size: 1.1rem; font-weight: 700; cursor: pointer; margin-top: 10px; }
 
-        .file-box { border: 1px solid var(--sub); background: var(--bg); padding: 20px; border-radius: 16px; text-align: center; cursor: pointer; color: #888; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 600; font-size: 0.95rem; flex-direction: column; }
-        .file-box:hover { border-color: var(--main); color: var(--main); background: #fdfdfd; }
-        .tag-container { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px; border: 1px solid var(--sub); border-radius: 14px; background: var(--bg); min-height: 48px; align-items: center; cursor: text; }
-        .tag-block { background: var(--main); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 6px; }
-        .tag-input { border: none; background: transparent; outline: none; flex-grow: 1; font-family: var(--font-main); font-size: 0.95rem; min-width: 80px; color: var(--text); }
-
         .setting-tabs { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid var(--sub); }
         .setting-tab { padding: 10px 15px; cursor: pointer; font-weight: 700; color: #999; border-bottom: 2px solid transparent; margin-bottom: -2px; }
         .setting-tab.active { color: var(--main); border-bottom-color: var(--main); }
@@ -138,8 +149,7 @@
 
         .toast-container { position: fixed; bottom: 110px; left: 50%; transform: translateX(-50%); z-index: 2000; width: 90%; max-width: 400px; pointer-events: none; }
         .toast { pointer-events: auto; background: rgba(33, 37, 41, 0.95); color: white; padding: 16px 24px; border-radius: 50px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: slideUp 0.3s ease; backdrop-filter: blur(4px); }
-        .undo-btn { color: #FFD700; font-weight: 700; cursor: pointer; font-size: 0.95rem; background: none; border: none; text-decoration: underline; }
-
+        
         .fab { position: fixed; bottom: 40px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: var(--main); color: white; border: none; font-size: 26px; box-shadow: 0 6px 20px rgba(0,0,0,0.25); cursor: pointer; z-index: 100; display: flex; align-items: center; justify-content: center; transition: var(--trans); }
         
         @keyframes popIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -174,7 +184,6 @@
     <div class="search-area" id="searchContainer">
         <div class="search-wrapper">
             <div class="search-icon"><i class="ri-search-line"></i></div>
-            <!-- name 속성 부여 및 autocomplete 강화 -->
             <input type="text" class="search-input" id="searchInput" name="main_search_input" placeholder="검색어 또는 #해시태그" autocomplete="new-password">
         </div>
     </div>
@@ -224,7 +233,7 @@
 
 <div id="toastContainer" class="toast-container"></div>
 
-<!-- 모달 섹션 (기존과 동일) -->
+<!-- 모달 섹션 (기존 유지) -->
 <div class="modal-wrap" id="folderManageModal">
     <div class="modal-box">
         <div class="modal-head">
@@ -297,7 +306,6 @@
         <div class="setting-content active" id="contentServer">
             <div class="form-group">
                 <label class="form-label">Google 웹 앱 URL</label>
-                <!-- 전용 name 부여 -->
                 <input type="text" class="form-input" id="settingUrlInput" name="gas_app_url" placeholder="https://script.google.com/macros/s/...">
             </div>
             <div class="form-group">
@@ -341,7 +349,7 @@
 </div>
 
 <script>
-    // --- 설정 및 변수 ---
+    // --- 전역 변수 및 설정 ---
     let webAppUrl = localStorage.getItem('inspirationNote_Url') || ""; 
     let accessKey = localStorage.getItem('inspirationNote_Key') || "";
     let isOfflineMode = localStorage.getItem('inspirationNote_Offline') === 'true'; 
@@ -356,7 +364,7 @@
     const catIcon = { 'text': 'ri-text', 'daily': 'ri-cup-line', 'art': 'ri-palette-line' };
 
     document.addEventListener('DOMContentLoaded', () => {
-        // [수정] 검색창 URL 노출 오류를 방지하기 위해 0.1초 뒤 강제 초기화
+        // [강제 조치] 검색창에 URL이 들어오는 브라우저 자동완성 현상 방지
         setTimeout(() => {
             const searchInput = document.getElementById('searchInput');
             if(searchInput) {
@@ -364,7 +372,7 @@
                 viewState.search = "";
                 refreshUI();
             }
-        }, 100);
+        }, 150);
         
         initApp();
         
@@ -379,7 +387,6 @@
 
     // --- 초기화 로직 (새로고침 시 연동 유지 보장) ---
     function initApp() {
-        // 로컬 스토리지에서 최신 상태 다시 읽기
         webAppUrl = localStorage.getItem('inspirationNote_Url') || "";
         accessKey = localStorage.getItem('inspirationNote_Key') || "";
         isOfflineMode = localStorage.getItem('inspirationNote_Offline') === 'true';
@@ -394,7 +401,6 @@
             updateStatusUI('offline');
             loadFromCache(); 
         } else if (webAppUrl && accessKey) {
-            // 정보가 있으면 즉시 서버 연결 시도
             fetchNotes(); 
         } else {
             updateStatusUI('error', '설정 필요');
@@ -446,16 +452,15 @@
         } finally { showLoader(false); }
     }
 
-    // 연동 해제 (로그아웃)
     function disconnectServer() {
-        if(!confirm("서버 연동을 해제하고 로그아웃하시겠습니까? 로컬에 저장된 설정 정보가 삭제됩니다.")) return;
+        if(!confirm("서버 연동을 해제하고 로그아웃하시겠습니까?")) return;
         localStorage.removeItem('inspirationNote_Url');
         localStorage.removeItem('inspirationNote_Key');
         localStorage.removeItem('inspirationNote_Offline');
         localStorage.removeItem('notes_cache');
         webAppUrl = ""; accessKey = ""; isOfflineMode = false;
         showToast("로그아웃 되었습니다.");
-        setTimeout(() => location.reload(), 800);
+        setTimeout(() => location.reload(), 600);
     }
 
     function saveToCache(data) {
@@ -539,9 +544,23 @@
                     el.className = 'card';
                     el.innerHTML = `<div class="card-meta"><div><span class="badge badge-cat">${engCat}</span><span class="badge badge-folder">${note.folder}</span></div><span>${note.date}</span></div><div class="card-title">${note.title}</div><div class="card-content">${note.content}</div>${preview}<div class="card-tags">${tagsHTML}</div><div class="card-actions" onclick="event.stopPropagation()"><button class="action-btn" onclick="openEditModal('${note.id}')"><i class="ri-edit-line"></i></button><button class="action-btn del" onclick="deleteNote('${note.id}')"><i class="ri-delete-bin-line"></i></button></div>`;
                 } else {
+                    // 🔥 리스트형 디자인 레이아웃 수정
                     el.className = 'list-item';
-                    el.innerHTML = `<div class="list-item-left"><div class="list-icon"><i class="${cIcon}"></i></div><div class="list-text-wrap"><div class="list-title">${note.title}</div><div class="list-meta">${note.folder} · ${note.date}</div></div></div><div class="list-actions" onclick="event.stopPropagation()"><button class="action-btn" onclick="openEditModal('${note.id}')"><i class="ri-edit-line"></i></button><button class="action-btn del" onclick="deleteNote('${note.id}')"><i class="ri-delete-bin-line"></i></button></div>`;
+                    el.innerHTML = `
+                        <div class="list-item-left">
+                            <div class="list-icon"><i class="${cIcon}"></i></div>
+                            <div class="list-content-wrap">
+                                <div class="list-title">${note.title}</div>
+                                <div class="list-meta"><span class="badge-text">${engCat}</span> · ${note.folder} · ${note.date}</div>
+                            </div>
+                        </div>
+                        <div class="list-actions" onclick="event.stopPropagation()">
+                            <button class="action-btn" onclick="openEditModal('${note.id}')"><i class="ri-edit-line"></i></button>
+                            <button class="action-btn del" onclick="deleteNote('${note.id}')"><i class="ri-delete-bin-line"></i></button>
+                        </div>
+                    `;
                 }
+                // 상세 모달 열기
                 el.onclick = () => openDetail(note);
                 container.appendChild(el);
             });
@@ -570,7 +589,7 @@
         saveToCache(notes); closeModal('writeModal'); refreshUI();
 
         if (!isOfflineMode) {
-            showLoader(true, "서버에 저장 중...");
+            showLoader(true, "저장 중...");
             await fetch(webAppUrl, { method: 'POST', body: JSON.stringify({ action: 'create', ...note, file: tempFile, key: accessKey }), headers: { 'Content-Type': 'text/plain' } });
             setTimeout(fetchNotes, 1500);
         }
@@ -581,6 +600,15 @@
         notes = notes.filter(n => n.id !== id);
         saveToCache(notes); refreshUI();
         if(!isOfflineMode) fetch(webAppUrl, { method: 'POST', body: JSON.stringify({ action: 'delete', id: id, key: accessKey }), headers: { 'Content-Type': 'text/plain' } });
+    }
+
+    // 모바일 등에서 이벤트 꼬임 방지를 위한 stopPropagation 강화
+    function setViewMode(m) { 
+        viewState.mode = m; 
+        document.querySelectorAll('.view-opts button').forEach(b => {
+            b.classList.toggle('active', (m==='grid' && b.id==='btnViewGrid') || (m==='list' && b.id==='btnViewList'));
+        });
+        refreshUI(); 
     }
 
     function openModal(id) {
@@ -596,7 +624,6 @@
     function showLoader(s, t) { document.getElementById('loader').style.display = s ? 'flex' : 'none'; if(t) document.getElementById('loaderText').innerText = t; }
     function showToast(m) { const t = document.createElement('div'); t.className='toast'; t.innerHTML=`<span>${m}</span>`; document.getElementById('toastContainer').appendChild(t); setTimeout(()=>t.remove(), 3000); }
     function setCategory(c) { viewState.cat = c; document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.innerText.includes(catName[c]) || (c==='all' && b.innerText==='전체'))); refreshUI(); }
-    function setViewMode(m) { viewState.mode = m; document.querySelectorAll('.view-opts button').forEach(b => b.classList.toggle('active', (m==='grid' && b.id==='btnViewGrid') || (m==='list' && b.id==='btnViewList'))); refreshUI(); }
     function setSortMode(s) { viewState.sort = s; refreshUI(); }
     function switchSettingTab(t) { document.querySelectorAll('.setting-tab').forEach(x=>x.classList.remove('active')); document.querySelectorAll('.setting-content').forEach(x=>x.classList.remove('active')); document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.add('active'); document.getElementById('content'+t.charAt(0).toUpperCase()+t.slice(1)).classList.add('active'); }
     function getGoogleDriveId(u) { if(!u) return null; let m = u.match(/[?&]id=([^&]+)/); if(m) return m[1]; m = u.match(/\/d\/([^/]+)/); if(m) return m[1]; return null; }
@@ -613,9 +640,21 @@
     function removeFile() { tempFile=null; document.getElementById('filePreviewArea').style.display='none'; document.getElementById('fileUploadBtn').style.display='flex'; }
     function updateFileUI(n,t,d) { document.getElementById('fileUploadBtn').style.display='none'; document.getElementById('filePreviewArea').style.display='flex'; document.getElementById('uploadInfo').innerText=n; const g=document.getElementById('uploadImg'); if(t.startsWith('image/')){g.src=d; g.style.display='block';}else g.style.display='none'; }
     function openEditModal(id) { const n=notes.find(x=>x.id===id); if(!n) return; openModal('writeModal'); document.getElementById('modalTitle').innerText="영감 수정 ✏️"; document.getElementById('editNoteId').value=id; document.getElementById('inputCategory').value=n.category; document.getElementById('folderSelect').value=n.folder; document.getElementById('inputTitle').value=n.title; document.getElementById('inputContent').value=n.content; document.getElementById('inputLink').value=n.link; currentTags=[...n.tags]; renderTags(); if(n.file_url) updateFileUI('기존 파일', 'image/', n.file_url); }
-    function openDetail(n) { const c=document.getElementById('detailContent'); let m=''; if(n.file_url) { if(n.file_url.startsWith('data:')) m=n.file_url.startsWith('data:image')?`<img src="${n.file_url}" style="width:100%; margin-top:15px; border-radius:12px;">` : ''; else { const d=getGoogleDriveId(n.file_url); m=d?`<iframe src="https://drive.google.com/file/d/${d}/preview" class="preview-frame"></iframe>`:`<a href="${n.file_url}" target="_blank">파일 보기</a>`; } } c.innerHTML=`<h2 style="font-weight:800">${n.title}</h2><p style="white-space:pre-wrap;">${n.content}</p>${m}`; document.getElementById('detailModal').style.display='flex'; }
+    function openDetail(n) { 
+        const c = document.getElementById('detailContent'); 
+        let m = ''; 
+        if(n.file_url) { 
+            if(n.file_url.startsWith('data:')) m=n.file_url.startsWith('data:image')?`<img src="${n.file_url}" style="width:100%; margin-top:15px; border-radius:12px;">` : ''; 
+            else { 
+                const d=getGoogleDriveId(n.file_url); 
+                m=d?`<iframe src="https://drive.google.com/file/d/${d}/preview" class="preview-frame" style="width:100%; height:400px; border-radius:12px; border:none; margin-top:15px;"></iframe>`:`<a href="${n.file_url}" target="_blank">파일 보기</a>`; 
+            } 
+        } 
+        c.innerHTML=`<h2 style="font-weight:800; margin-top:0;">${n.title}</h2><p style="white-space:pre-wrap; line-height:1.6; color:#444;">${n.content}</p>${m}`; 
+        document.getElementById('detailModal').style.display='flex'; 
+    }
     function exportData() { if(notes.length===0) return; const b=new Blob([JSON.stringify(notes)],{type:'application/json'}); const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u; a.download='inspiration_backup.json'; a.click(); }
-    function importData(i) { const f=i.files[0]; if(!f) return; const r=new FileReader(); r.onload=(e)=>{ try { notes=JSON.parse(e.target.result); saveToCache(notes); refreshUI(); alert("데이터를 불러왔습니다."); } catch(e) { alert("올바른 JSON 파일이 아닙니다."); } }; r.readAsText(f); }
+    function importData(i) { const f=i.files[0]; if(!f) return; const r=new FileReader(); r.onload=(e)=>{ try { notes=JSON.parse(e.target.result); saveToCache(notes); refreshUI(); alert("데이터를 성공적으로 불러왔습니다."); } catch(e) { alert("올바른 JSON 파일이 아닙니다."); } }; r.readAsText(f); }
 </script>
 
 </body>
