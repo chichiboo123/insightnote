@@ -53,7 +53,7 @@
 
         .search-area { padding: 0 24px 15px; flex-shrink: 0; }
         .search-wrapper { position: relative; display: flex; align-items: center; width: 100%; }
-        /* autocomplete="off"를 추가하여 URL 자동 완성을 방지함 */
+        /* name="main_search" 추가 및 autocomplete="new-password" (일부 브라우저에서 off보다 강력함) 적용 */
         .search-input { width: 100%; padding: 14px 20px 14px 45px; border-radius: 24px; border: none; background: var(--card); box-shadow: 0 4px 15px rgba(0,0,0,0.04); font-size: 1rem; outline: none; transition: var(--trans); }
         .search-input:focus { box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
         .search-icon { position: absolute; left: 16px; color: var(--main); font-size: 1.2rem; pointer-events: none; display: flex; align-items: center; height: 100%; top: 0; }
@@ -174,8 +174,8 @@
     <div class="search-area" id="searchContainer">
         <div class="search-wrapper">
             <div class="search-icon"><i class="ri-search-line"></i></div>
-            <!-- autocomplete="off"로 URL 노출 오류 해결 -->
-            <input type="text" class="search-input" id="searchInput" placeholder="검색어 또는 #해시태그" autocomplete="off">
+            <!-- name 속성 부여 및 autocomplete 강화 -->
+            <input type="text" class="search-input" id="searchInput" name="main_search_input" placeholder="검색어 또는 #해시태그" autocomplete="new-password">
         </div>
     </div>
 
@@ -224,7 +224,7 @@
 
 <div id="toastContainer" class="toast-container"></div>
 
-<!-- 폴더 관리 모달 -->
+<!-- 모달 섹션 (기존과 동일) -->
 <div class="modal-wrap" id="folderManageModal">
     <div class="modal-box">
         <div class="modal-head">
@@ -242,7 +242,6 @@
     </div>
 </div>
 
-<!-- 작성/수정 모달 -->
 <div class="modal-wrap" id="writeModal">
     <div class="modal-box">
         <div class="modal-head">
@@ -285,7 +284,6 @@
     </div>
 </div>
 
-<!-- 설정 모달 -->
 <div class="modal-wrap" id="settingsModal">
     <div class="modal-box">
         <div class="modal-head">
@@ -299,11 +297,12 @@
         <div class="setting-content active" id="contentServer">
             <div class="form-group">
                 <label class="form-label">Google 웹 앱 URL</label>
-                <input type="text" class="form-input" id="settingUrlInput" placeholder="https://script.google.com/macros/s/...">
+                <!-- 전용 name 부여 -->
+                <input type="text" class="form-input" id="settingUrlInput" name="gas_app_url" placeholder="https://script.google.com/macros/s/...">
             </div>
             <div class="form-group">
                 <label class="form-label">액세스 키 (설정한 비밀번호)</label>
-                <input type="password" class="form-input" id="settingKeyInput" placeholder="비밀번호 입력">
+                <input type="password" class="form-input" id="settingKeyInput" name="gas_app_key" placeholder="비밀번호 입력">
             </div>
             <div style="display:flex; flex-direction: column; gap:10px;">
                 <div style="display:flex; gap:10px;">
@@ -316,11 +315,10 @@
             </div>
         </div>
         <div class="setting-content" id="contentData">
-            <p style="font-size:0.9rem; color:#666; margin-bottom:15px; line-height:1.5;">브라우저에 저장된 데이터를 백업하거나 복구할 수 있습니다.</p>
-            <button class="full-btn" style="background:var(--main); display:flex; justify-content:center; align-items:center; gap:8px;" onclick="exportData()"><i class="ri-download-cloud-2-line"></i> 데이터 백업</button>
+            <p style="font-size:0.9rem; color:#666; margin-bottom:15px; line-height:1.5;">로컬 데이터를 관리합니다.</p>
+            <button class="full-btn" style="background:var(--main);" onclick="exportData()">데이터 백업</button>
             <div class="form-group" style="margin-top:15px;">
                 <label class="file-box" style="border-style:dashed;">
-                    <i class="ri-upload-cloud-2-line" style="font-size:1.6rem; color:#888;"></i>
                     <span>백업 파일 불러오기 (.json)</span>
                     <input type="file" id="jsonInput" style="display:none" accept=".json" onchange="importData(this)">
                 </label>
@@ -332,13 +330,23 @@
     </div>
 </div>
 
+<div class="modal-wrap" id="detailModal">
+    <div class="modal-box">
+        <div class="modal-head">
+            <span class="modal-title">상세 보기</span>
+            <button class="close-btn" onclick="closeModal('detailModal')"><i class="ri-close-line"></i></button>
+        </div>
+        <div id="detailContent"></div>
+    </div>
+</div>
+
 <script>
     // --- 설정 및 변수 ---
     let webAppUrl = localStorage.getItem('inspirationNote_Url') || ""; 
     let accessKey = localStorage.getItem('inspirationNote_Key') || "";
     let isOfflineMode = localStorage.getItem('inspirationNote_Offline') === 'true'; 
     let notes = [];
-    let customFolders = JSON.parse(localStorage.getItem('inspirationFolders')) || ["아이디어", "뮤지컬", "독서", "교육"];
+    let customFolders = JSON.parse(localStorage.getItem('inspirationFolders')) || ["아이디어", "뮤지컬", "독서", "교육", "디지털"];
     let viewState = { cat: 'all', folder: 'all', mode: 'grid', sort: 'date-desc', search: '' };
     let currentTags = [];
     let tempFile = null;
@@ -348,37 +356,52 @@
     const catIcon = { 'text': 'ri-text', 'daily': 'ri-cup-line', 'art': 'ri-palette-line' };
 
     document.addEventListener('DOMContentLoaded', () => {
-        // 검색창 URL 노출 방지를 위한 명시적 초기화
-        const searchInput = document.getElementById('searchInput');
-        if(searchInput) searchInput.value = "";
+        // [수정] 검색창 URL 노출 오류를 방지하기 위해 0.1초 뒤 강제 초기화
+        setTimeout(() => {
+            const searchInput = document.getElementById('searchInput');
+            if(searchInput) {
+                searchInput.value = "";
+                viewState.search = "";
+                refreshUI();
+            }
+        }, 100);
         
         initApp();
         
-        if(searchInput) searchInput.addEventListener('input', (e) => { viewState.search = e.target.value; refreshUI(); });
+        document.getElementById('searchInput').addEventListener('input', (e) => { 
+            viewState.search = e.target.value; 
+            refreshUI(); 
+        });
         document.getElementById('themeSelector').addEventListener('change', (e) => setTheme(e.target.value));
         document.getElementById('realTagInput').addEventListener('keydown', handleTagInput);
         document.getElementById('realTagInput').addEventListener('input', handleTagComma);
     });
 
-    // --- 초기화 로직 (새로고침 시 로그인 유지 보장) ---
+    // --- 초기화 로직 (새로고침 시 연동 유지 보장) ---
     function initApp() {
+        // 로컬 스토리지에서 최신 상태 다시 읽기
+        webAppUrl = localStorage.getItem('inspirationNote_Url') || "";
+        accessKey = localStorage.getItem('inspirationNote_Key') || "";
+        isOfflineMode = localStorage.getItem('inspirationNote_Offline') === 'true';
+
         const t = localStorage.getItem('theme') || 'blue';
         setTheme(t);
         document.getElementById('themeSelector').value = t;
         
-        // 연동 해제 버튼 상태 초기화
         document.getElementById('disconnectBtn').style.display = (webAppUrl && accessKey) ? 'block' : 'none';
 
         if (isOfflineMode) {
             updateStatusUI('offline');
             loadFromCache(); 
         } else if (webAppUrl && accessKey) {
-            // 새로고침 시에도 URL과 KEY가 있으면 즉시 서버 동기화
+            // 정보가 있으면 즉시 서버 연결 시도
             fetchNotes(); 
         } else {
             updateStatusUI('error', '설정 필요');
             refreshUI();
-            setTimeout(() => { if(!webAppUrl && !isOfflineMode) openModal('settingsModal'); }, 500);
+            setTimeout(() => { 
+                if(!webAppUrl && !isOfflineMode) openModal('settingsModal'); 
+            }, 500);
         }
         renderFolders();
     }
@@ -419,18 +442,20 @@
             } else { throw new Error(json.message); }
         } catch (e) {
             updateStatusUI('error', '연결 실패');
-            loadFromCache(); // 서버 실패 시 캐시 사용
+            loadFromCache();
         } finally { showLoader(false); }
     }
 
+    // 연동 해제 (로그아웃)
     function disconnectServer() {
-        if(!confirm("서버 연동을 해제하고 로그아웃하시겠습니까? 정보가 삭제됩니다.")) return;
+        if(!confirm("서버 연동을 해제하고 로그아웃하시겠습니까? 로컬에 저장된 설정 정보가 삭제됩니다.")) return;
         localStorage.removeItem('inspirationNote_Url');
         localStorage.removeItem('inspirationNote_Key');
         localStorage.removeItem('inspirationNote_Offline');
         localStorage.removeItem('notes_cache');
-        showToast("연동이 해제되었습니다.");
-        setTimeout(() => location.reload(), 1000);
+        webAppUrl = ""; accessKey = ""; isOfflineMode = false;
+        showToast("로그아웃 되었습니다.");
+        setTimeout(() => location.reload(), 800);
     }
 
     function saveToCache(data) {
@@ -463,8 +488,8 @@
                 alert("연결 성공!");
                 closeModal('settingsModal');
                 initApp();
-            } else { alert("비밀번호 오류입니다."); }
-        } catch (e) { alert("URL이 올바르지 않거나 배포 권한 오류입니다."); }
+            } else { alert("비밀번호가 틀렸습니다."); }
+        } catch (e) { alert("연동 실패: URL을 확인하거나 배포 권한을 다시 설정하세요."); }
         finally { showLoader(false); }
     }
 
@@ -545,7 +570,7 @@
         saveToCache(notes); closeModal('writeModal'); refreshUI();
 
         if (!isOfflineMode) {
-            showLoader(true, "저장 중...");
+            showLoader(true, "서버에 저장 중...");
             await fetch(webAppUrl, { method: 'POST', body: JSON.stringify({ action: 'create', ...note, file: tempFile, key: accessKey }), headers: { 'Content-Type': 'text/plain' } });
             setTimeout(fetchNotes, 1500);
         }
@@ -570,7 +595,6 @@
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     function showLoader(s, t) { document.getElementById('loader').style.display = s ? 'flex' : 'none'; if(t) document.getElementById('loaderText').innerText = t; }
     function showToast(m) { const t = document.createElement('div'); t.className='toast'; t.innerHTML=`<span>${m}</span>`; document.getElementById('toastContainer').appendChild(t); setTimeout(()=>t.remove(), 3000); }
-    function setTheme(t) { document.documentElement.setAttribute('data-theme', t); localStorage.setItem('theme', t); }
     function setCategory(c) { viewState.cat = c; document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.innerText.includes(catName[c]) || (c==='all' && b.innerText==='전체'))); refreshUI(); }
     function setViewMode(m) { viewState.mode = m; document.querySelectorAll('.view-opts button').forEach(b => b.classList.toggle('active', (m==='grid' && b.id==='btnViewGrid') || (m==='list' && b.id==='btnViewList'))); refreshUI(); }
     function setSortMode(s) { viewState.sort = s; refreshUI(); }
@@ -590,8 +614,8 @@
     function updateFileUI(n,t,d) { document.getElementById('fileUploadBtn').style.display='none'; document.getElementById('filePreviewArea').style.display='flex'; document.getElementById('uploadInfo').innerText=n; const g=document.getElementById('uploadImg'); if(t.startsWith('image/')){g.src=d; g.style.display='block';}else g.style.display='none'; }
     function openEditModal(id) { const n=notes.find(x=>x.id===id); if(!n) return; openModal('writeModal'); document.getElementById('modalTitle').innerText="영감 수정 ✏️"; document.getElementById('editNoteId').value=id; document.getElementById('inputCategory').value=n.category; document.getElementById('folderSelect').value=n.folder; document.getElementById('inputTitle').value=n.title; document.getElementById('inputContent').value=n.content; document.getElementById('inputLink').value=n.link; currentTags=[...n.tags]; renderTags(); if(n.file_url) updateFileUI('기존 파일', 'image/', n.file_url); }
     function openDetail(n) { const c=document.getElementById('detailContent'); let m=''; if(n.file_url) { if(n.file_url.startsWith('data:')) m=n.file_url.startsWith('data:image')?`<img src="${n.file_url}" style="width:100%; margin-top:15px; border-radius:12px;">` : ''; else { const d=getGoogleDriveId(n.file_url); m=d?`<iframe src="https://drive.google.com/file/d/${d}/preview" class="preview-frame"></iframe>`:`<a href="${n.file_url}" target="_blank">파일 보기</a>`; } } c.innerHTML=`<h2 style="font-weight:800">${n.title}</h2><p style="white-space:pre-wrap;">${n.content}</p>${m}`; document.getElementById('detailModal').style.display='flex'; }
-    function exportData() { if(notes.length===0) return; const b=new Blob([JSON.stringify(notes)],{type:'application/json'}); const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u; a.download='backup.json'; a.click(); }
-    function importData(i) { const f=i.files[0]; if(!f) return; const r=new FileReader(); r.onload=(e)=>{ notes=JSON.parse(e.target.result); saveToCache(notes); refreshUI(); alert("불러오기 완료"); }; r.readAsText(f); }
+    function exportData() { if(notes.length===0) return; const b=new Blob([JSON.stringify(notes)],{type:'application/json'}); const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u; a.download='inspiration_backup.json'; a.click(); }
+    function importData(i) { const f=i.files[0]; if(!f) return; const r=new FileReader(); r.onload=(e)=>{ try { notes=JSON.parse(e.target.result); saveToCache(notes); refreshUI(); alert("데이터를 불러왔습니다."); } catch(e) { alert("올바른 JSON 파일이 아닙니다."); } }; r.readAsText(f); }
 </script>
 
 </body>
