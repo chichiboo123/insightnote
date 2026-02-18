@@ -8,10 +8,8 @@
 const SHEET_NAME  = 'Notes';
 const FOLDER_NAME = '영감노트_파일';
 
-// 비밀번호는 스크립트 속성(Script Properties)에 ACCESS_KEY 키로 저장하세요.
-// (스크립트 편집기 → 프로젝트 설정 → 스크립트 속성)
-const ACCESS_KEY = PropertiesService.getScriptProperties()
-                    .getProperty('ACCESS_KEY') || 'changeme';
+// 비밀번호 ← 여기만 수정하세요
+const ACCESS_KEY = '2865';
 
 // 컬럼 순서 — 스프레드시트 실제 순서와 일치
 // id | category | folder | title | content | link | file_url | tags | date | created_at
@@ -62,9 +60,20 @@ function getOrCreateFolder() {
 
 // ── 메인 핸들러 ───────────────────────────────────────────────────
 
-/** GET 요청 — 서버 동작 확인용 */
+/** GET 요청 — 연결 테스트 및 읽기 처리 */
 function doGet(e) {
-  return responseJSON({ status: 'ok', message: '영감노트 GAS 서버 정상 작동 중' });
+  const params = (e && e.parameter) ? e.parameter : {};
+
+  // action=read 요청: 키 검증 후 데이터 반환
+  if (params.action === 'read') {
+    if (!params.key || params.key !== ACCESS_KEY) {
+      return responseJSON({ status: 'error', message: '키가 올바르지 않습니다.' });
+    }
+    return handleRead();
+  }
+
+  // 기본 상태 확인
+  return responseJSON({ status: 'success', message: '영감노트 GAS 서버 정상 작동 중' });
 }
 
 /** POST 요청 — 모든 앱 요청 처리 */
