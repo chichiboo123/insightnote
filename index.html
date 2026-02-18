@@ -209,7 +209,7 @@
 <div class="app-container">
     <header>
         <div class="header-left">
-            <h1 class="app-title" onclick="location.reload()"><span class="material-symbols-outlined" style="font-size: 1.8rem; vertical-align: middle;">light</span> 영감노트</h1>
+            <h1 class="app-title" onclick="location.reload()"><svg xmlns="http://www.w3.org/2000/svg" height="1.8rem" viewBox="0 -960 960 960" width="1.8rem" style="fill:var(--main);vertical-align:middle;flex-shrink:0;"><path d="M480-120q-66 0-113-47t-47-113H200q-33 0-56.5-23.5T120-360q0-140 92-241.5T440-718v-122h80v122q136 15 228 116.5T840-360q0 33-23.5 56.5T760-280H640q0 66-47 113t-113 47ZM200-360h560q0-116-82-198t-198-82q-116 0-198 82t-82 198Zm280 160q33 0 56.5-23.5T560-280H400q0 33 23.5 56.5T480-200Zm0-80Z"/></svg> 영감노트</h1>
         </div>
         <div class="header-actions">
             <div id="connectionStatus" onclick="openModal('settingsModal')"><span class="status-dot"></span> <span>대기 중</span></div>
@@ -311,7 +311,7 @@
 <div class="modal-wrap" id="writeModal">
     <div class="modal-box">
         <div class="modal-head">
-            <span class="modal-title" id="modalTitle"><span class="material-symbols-outlined" style="font-size:1.4rem;color:var(--main);">light</span> 새로운 영감</span>
+            <span class="modal-title" id="modalTitle"><svg xmlns="http://www.w3.org/2000/svg" height="1.4rem" viewBox="0 -960 960 960" width="1.4rem" style="fill:var(--main);flex-shrink:0;"><path d="M480-120q-66 0-113-47t-47-113H200q-33 0-56.5-23.5T120-360q0-140 92-241.5T440-718v-122h80v122q136 15 228 116.5T840-360q0 33-23.5 56.5T760-280H640q0 66-47 113t-113 47ZM200-360h560q0-116-82-198t-198-82q-116 0-198 82t-82 198Zm280 160q33 0 56.5-23.5T560-280H400q0 33 23.5 56.5T480-200Zm0-80Z"/></svg> 새로운 영감</span>
             <button class="close-btn" onclick="closeModal('writeModal')"><i class="ri-close-line"></i></button>
         </div>
         <input type="hidden" id="editNoteId">
@@ -743,7 +743,7 @@
     function openModal(id) {
         document.getElementById(id).style.display = 'flex';
         if (id === 'writeModal') {
-            document.getElementById('modalTitle').innerHTML = '<span class="material-symbols-outlined" style="font-size:1.4rem;color:var(--main);">light</span> 새로운 영감';
+            document.getElementById('modalTitle').innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" height="1.4rem" viewBox="0 -960 960 960" width="1.4rem" style="fill:var(--main);flex-shrink:0;"><path d="M480-120q-66 0-113-47t-47-113H200q-33 0-56.5-23.5T120-360q0-140 92-241.5T440-718v-122h80v122q136 15 228 116.5T840-360q0 33-23.5 56.5T760-280H640q0 66-47 113t-113 47ZM200-360h560q0-116-82-198t-198-82q-116 0-198 82t-82 198Zm280 160q33 0 56.5-23.5T560-280H400q0 33 23.5 56.5T480-200Zm0-80Z"/></svg> 새로운 영감';
             document.getElementById('folderSelect').innerHTML = customFolders.map(f => `<option value="${f}">${f}</option>`).join('') + '<option value="기타">기타</option>';
             document.getElementById('editNoteId').value = "";
             document.querySelectorAll('#writeModal .form-input').forEach(i => i.value = "");
