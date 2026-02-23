@@ -26,14 +26,18 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: var(--font-main); background: var(--bg); color: var(--text); margin: 0; padding: 0; transition: background 0.3s ease; }
         
-        .app-container { 
-            max-width: 800px; 
-            margin: 0 auto; 
-            min-height: 100vh; 
-            display: flex; 
+        .app-container {
+            max-width: 800px;
+            margin: 0 auto;
+            min-height: 100vh;
+            display: flex;
             flex-direction: column;
-            padding-bottom: 100px; 
-            position: relative; 
+            padding-bottom: 100px;
+            position: relative;
+        }
+
+        @media (min-width: 1024px) {
+            .app-container { max-width: min(1400px, 95vw); }
         }
 
         .loader-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 9999; display: none; justify-content: center; align-items: center; flex-direction: column; }
