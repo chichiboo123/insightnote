@@ -96,6 +96,14 @@
         .grid-cols-3 .card-content, .grid-cols-4 .card-content { font-size: 0.85rem; -webkit-line-clamp: 3; }
         .grid-cols-4 .card-meta { font-size: 0.7rem; }
         .grid-cols-4 .card { padding: 16px; }
+
+        /* 좁은 화면: 카드 최소 너비 기준으로 열 수 자동 조정 */
+        @media (max-width: 600px) {
+            .grid-view { gap: 14px; }
+            .grid-cols-2 { grid-template-columns: repeat(auto-fill, minmax(min(170px, 100%), 1fr)); }
+            .grid-cols-3 { grid-template-columns: repeat(auto-fill, minmax(min(150px, 100%), 1fr)); }
+            .grid-cols-4 { grid-template-columns: repeat(auto-fill, minmax(min(130px, 100%), 1fr)); }
+        }
         
         /* 리스트 뷰 레이아웃 */
         .list-view { display: flex; flex-direction: column; gap: 10px; }
