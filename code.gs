@@ -98,10 +98,11 @@ function doPost(e) {
   Logger.log('요청 액션: ' + action + ' / ID: ' + (data.id || 'N/A'));
 
   try {
-    if (action === 'read')   return handleRead();
-    if (action === 'create') return handleCreate(data);
-    if (action === 'update') return handleUpdate(data);
-    if (action === 'delete') return handleDelete(data);
+    if (action === 'read')        return handleRead();
+    if (action === 'create')      return handleCreate(data);
+    if (action === 'update')      return handleUpdate(data);
+    if (action === 'delete')      return handleDelete(data);
+    if (action === 'saveFolders') return handleSaveFolders(data);
 
     return responseJSON({ status: 'error', message: '알 수 없는 액션: ' + action });
   } catch (err) {
@@ -120,7 +121,7 @@ function handleRead() {
 
   // 헤더만 있거나 완전히 비어있을 때
   if (lastRow <= 1) {
-    return responseJSON({ status: 'success', data: [] });
+    return responseJSON({ status: 'success', data: [], folders: getStoredFolders() });
   }
 
   const rows  = sheet.getRange(2, 1, lastRow - 1, SHEET_HEADERS.length).getValues();
@@ -147,7 +148,7 @@ function handleRead() {
     });
 
   Logger.log('읽기 완료 — 메모 수: ' + notes.length);
-  return responseJSON({ status: 'success', data: notes });
+  return responseJSON({ status: 'success', data: notes, folders: getStoredFolders() });
 }
 
 /** 새 메모 생성 */
@@ -260,6 +261,35 @@ function handleDelete(data) {
   } finally {
     lock.releaseLock();
   }
+}
+
+
+// ── 파일 업로드 ───────────────────────────────────────────────────
+
+// ── 폴더 관리 ───────────────────────────────────────────────────────
+
+/**
+ * ScriptProperties에서 폴더 목록을 읽어 반환합니다.
+ * 저장된 값이 없으면 null 반환 (프론트에서 로컬 폴더를 서버로 최초 동기화)
+ */
+function getStoredFolders() {
+  const props  = PropertiesService.getScriptProperties();
+  const stored = props.getProperty('customFolders');
+  if (stored) {
+    try { return JSON.parse(stored); } catch(e) {}
+  }
+  return null; // 아직 서버에 폴더가 저장된 적 없음
+}
+
+/** 폴더 목록을 ScriptProperties에 저장 */
+function handleSaveFolders(data) {
+  if (!data.folders || !Array.isArray(data.folders)) {
+    return responseJSON({ status: 'error', message: '폴더 데이터가 없습니다.' });
+  }
+  const props = PropertiesService.getScriptProperties();
+  props.setProperty('customFolders', JSON.stringify(data.folders));
+  Logger.log('폴더 저장 완료: ' + JSON.stringify(data.folders));
+  return responseJSON({ status: 'success' });
 }
 
 

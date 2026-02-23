@@ -17,10 +17,11 @@
         /* 🎨 디자인 토큰 및 테마 설정 */
         :root { --font-main: 'Pretendard GOV', sans-serif; --radius: 16px; --trans: all 0.2s ease; }
         
-        [data-theme="blue"] { --bg: #F0F4F8; --main: #7B9ACC; --sub: #E2EBF5; --text: #2C3E50; --card: #FFF; --grad: linear-gradient(135deg, #7B9ACC, #5A7AA0); }
-        [data-theme="green"] { --bg: #F1F8F5; --main: #8EBAA5; --sub: #E2EFE9; --text: #2D3E35; --card: #FFF; --grad: linear-gradient(135deg, #8EBAA5, #6E9A85); }
+        [data-theme="blue"]   { --bg: #F0F4F8; --main: #7B9ACC; --sub: #E2EBF5; --text: #2C3E50; --card: #FFF; --grad: linear-gradient(135deg, #7B9ACC, #5A7AA0); }
+        [data-theme="green"]  { --bg: #F1F8F5; --main: #8EBAA5; --sub: #E2EFE9; --text: #2D3E35; --card: #FFF; --grad: linear-gradient(135deg, #8EBAA5, #6E9A85); }
         [data-theme="yellow"] { --bg: #FFFDF5; --main: #E6C27A; --sub: #FDF3DB; --text: #4A4036; --card: #FFF; --grad: linear-gradient(135deg, #E6C27A, #C6A25A); }
-        [data-theme="red"] { --bg: #FEF5F5; --main: #E09494; --sub: #FADBD8; --text: #4A2C2C; --card: #FFF; --grad: linear-gradient(135deg, #E09494, #C07474); }
+        [data-theme="red"]    { --bg: #FEF5F5; --main: #E09494; --sub: #FADBD8; --text: #4A2C2C; --card: #FFF; --grad: linear-gradient(135deg, #E09494, #C07474); }
+        [data-theme="dark"]   { --bg: #0f0f1a; --main: #7B9ACC; --sub: #1e1e35; --text: #dde2ec; --card: #16192b; --grad: linear-gradient(135deg, #3a5a8a, #2a4070); }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: var(--font-main); background: var(--bg); color: var(--text); margin: 0; padding: 0; transition: background 0.3s ease; }
@@ -83,7 +84,14 @@
         .view-opts button.active { background: var(--sub); color: var(--main); }
         .sort-select { padding: 8px 14px; border-radius: 14px; border: 1px solid var(--sub); background: var(--card); color: #555; font-size: 0.85rem; outline: none; cursor: pointer; appearance: none; font-weight: 600; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23999'%3e%3cpath d='M12 16L6 10H18L12 16Z'/%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 14px center; background-size: 20px; padding-right: 30px; }
 
-        .grid-view { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .grid-view { display: grid; gap: 20px; }
+        .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+        .grid-cols-3 .card-title, .grid-cols-4 .card-title { font-size: 1rem; }
+        .grid-cols-3 .card-content, .grid-cols-4 .card-content { font-size: 0.85rem; -webkit-line-clamp: 3; }
+        .grid-cols-4 .card-meta { font-size: 0.7rem; }
+        .grid-cols-4 .card { padding: 16px; }
         
         /* 리스트 뷰 레이아웃 */
         .list-view { display: flex; flex-direction: column; gap: 10px; }
@@ -194,6 +202,29 @@
         
         .fab { position: fixed; bottom: 40px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: var(--main); color: white; border: none; font-size: 26px; box-shadow: 0 6px 20px rgba(0,0,0,0.25); cursor: pointer; z-index: 100; display: flex; align-items: center; justify-content: center; transition: var(--trans); }
         
+        /* 다크모드 전용 오버라이드 */
+        [data-theme="dark"] body { color: var(--text); }
+        [data-theme="dark"] .form-input:focus { background: var(--card); box-shadow: 0 0 0 3px rgba(123,154,204,0.15); }
+        [data-theme="dark"] .tag-container:focus-within { background: var(--card); }
+        [data-theme="dark"] .card-content { color: #aaa; }
+        [data-theme="dark"] .card-actions { border-top-color: var(--sub); }
+        [data-theme="dark"] .action-btn { background: var(--sub); color: #aaa; }
+        [data-theme="dark"] .card-preview { background: var(--sub); border-color: var(--sub); }
+        [data-theme="dark"] .card:hover { box-shadow: 0 12px 30px rgba(0,0,0,0.4); }
+        [data-theme="dark"] .list-item { border-color: var(--sub); box-shadow: none; }
+        [data-theme="dark"] .list-preview { color: #888; }
+        [data-theme="dark"] .list-meta { color: #777; }
+        [data-theme="dark"] .tab-btn { background: rgba(255,255,255,0.07); color: #999; }
+        [data-theme="dark"] #connectionStatus { background: rgba(255,255,255,0.08); }
+        [data-theme="dark"] .file-box:hover { background: var(--sub); }
+        [data-theme="dark"] .loader-overlay { background: rgba(0,0,0,0.88); }
+        [data-theme="dark"] #loaderText { color: #bbb; }
+        [data-theme="dark"] .empty-msg { color: #666; }
+        [data-theme="dark"] .modal-box { border: 1px solid var(--sub); }
+        [data-theme="dark"] .modal-footer { border-top-color: var(--sub); }
+        [data-theme="dark"] .setting-tabs { border-bottom-color: var(--sub); }
+        [data-theme="dark"] #detailContent { color: var(--text); }
+
         @keyframes popIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes slideUp { from { transform: translate(-50%, 20px); } to { opacity: 1; transform: translate(-50%, 0); } }
@@ -219,6 +250,7 @@
                 <option value="green">그린</option>
                 <option value="yellow">옐로우</option>
                 <option value="red">레드</option>
+                <option value="dark">다크</option>
             </select>
         </div>
     </header>
@@ -258,7 +290,9 @@
 
     <div class="toolbar">
         <div class="view-opts">
-            <button class="active" id="btnViewGrid" onclick="event.stopPropagation(); setViewMode('grid')" title="카드형"><i class="ri-grid-fill"></i></button>
+            <button class="active" id="btnViewGrid2" onclick="event.stopPropagation(); setGridView(2)" title="2열 그리드"><i class="ri-grid-fill"></i></button>
+            <button id="btnViewGrid3" onclick="event.stopPropagation(); setGridView(3)" title="3열 그리드" style="font-size:0.78rem;font-weight:800;letter-spacing:-0.5px;">3열</button>
+            <button id="btnViewGrid4" onclick="event.stopPropagation(); setGridView(4)" title="4열 그리드" style="font-size:0.78rem;font-weight:800;letter-spacing:-0.5px;">4열</button>
             <button id="btnViewList" onclick="event.stopPropagation(); setViewMode('list')" title="리스트형"><i class="ri-list-check"></i></button>
         </div>
         <select class="sort-select" id="sortSelector" onchange="setSortMode(this.value)">
@@ -416,8 +450,16 @@
     let accessKey = localStorage.getItem('inspirationNote_Key') || "";
     let isOfflineMode = localStorage.getItem('inspirationNote_Offline') === 'true'; 
     let notes = [];
-    let customFolders = JSON.parse(localStorage.getItem('inspirationFolders')) || ["아이디어", "뮤지컬", "독서", "교육", "디지털"];
-    let viewState = { cat: 'all', folder: 'all', mode: 'grid', sort: 'date-desc', search: '' };
+    let _savedFolders = JSON.parse(localStorage.getItem('inspirationFolders'));
+    let customFolders = _savedFolders && _savedFolders.length
+        ? _savedFolders
+        : ["아이디어", "뮤지컬", "독서", "교육", "디지털", "생각"];
+    // '생각' 폴더 마이그레이션 (기존 사용자)
+    if (!customFolders.includes('생각')) {
+        customFolders.push('생각');
+        localStorage.setItem('inspirationFolders', JSON.stringify(customFolders));
+    }
+    let viewState = { cat: 'all', folder: 'all', mode: 'grid', gridCols: parseInt(localStorage.getItem('gridCols')) || 2, sort: 'date-desc', search: '' };
     let currentTags = [];
     let tempFile = null;
 
@@ -469,6 +511,12 @@
             setTimeout(() => { if(!webAppUrl && !isOfflineMode) openModal('settingsModal'); }, 500);
         }
         renderFolders();
+        // 그리드 버튼 초기 상태 복원
+        document.querySelectorAll('.view-opts button').forEach(b => b.classList.remove('active'));
+        const _gb = viewState.mode === 'list'
+            ? document.getElementById('btnViewList')
+            : document.getElementById('btnViewGrid' + viewState.gridCols);
+        if (_gb) _gb.classList.add('active');
     }
 
     function setTheme(t) { document.documentElement.setAttribute('data-theme', t); localStorage.setItem('theme', t); }
@@ -499,8 +547,18 @@
                 notes = json.data.map(n => ({
                     ...n, id: String(n.id),
                     tags: typeof n.tags === 'string' ? n.tags.split(',').filter(t=>t) : (n.tags || []),
-                    deleted_at: null 
+                    deleted_at: null
                 }));
+                // 서버 폴더 동기화
+                if (Array.isArray(json.folders) && json.folders.length > 0) {
+                    // 서버에 저장된 폴더가 있으면 서버 기준으로 업데이트
+                    customFolders = json.folders;
+                    localStorage.setItem('inspirationFolders', JSON.stringify(customFolders));
+                    renderFolders();
+                } else if (json.folders === null) {
+                    // 서버에 폴더가 없음 (최초 연동) → 로컬 폴더를 서버로 업로드
+                    syncFolders();
+                }
                 saveToCache(notes);
                 updateStatusUI('ok');
                 refreshUI();
@@ -631,7 +689,7 @@
             container.className = 'content-area';
             container.innerHTML = `<div class="empty-msg"><span class="material-symbols-outlined">ev_shadow</span><p>표시할 영감이 없습니다.</p></div>`;
         } else {
-            container.className = viewState.mode === 'grid' ? 'content-area grid-view' : 'content-area list-view';
+            container.className = viewState.mode === 'grid' ? `content-area grid-view grid-cols-${viewState.gridCols}` : 'content-area list-view';
             list.forEach(note => {
                 const el = document.createElement('div');
                 const engCat = catMap[note.category] || 'ETC';
@@ -733,12 +791,32 @@
         }
     }
 
-    function setViewMode(m) { 
-        viewState.mode = m; 
-        document.querySelectorAll('.view-opts button').forEach(b => {
-            b.classList.toggle('active', (m==='grid' && b.id==='btnViewGrid') || (m==='list' && b.id==='btnViewList'));
-        });
-        refreshUI(); 
+    function setViewMode(m) {
+        viewState.mode = m;
+        document.querySelectorAll('.view-opts button').forEach(b => b.classList.remove('active'));
+        if (m === 'list') {
+            document.getElementById('btnViewList').classList.add('active');
+        } else {
+            const btn = document.getElementById('btnViewGrid' + viewState.gridCols);
+            if (btn) btn.classList.add('active');
+        }
+        refreshUI();
+    }
+    function setGridView(cols) {
+        viewState.mode = 'grid';
+        viewState.gridCols = cols;
+        localStorage.setItem('gridCols', cols);
+        document.querySelectorAll('.view-opts button').forEach(b => b.classList.remove('active'));
+        const btn = document.getElementById('btnViewGrid' + cols);
+        if (btn) btn.classList.add('active');
+        refreshUI();
+    }
+    async function syncFolders() {
+        if (isOfflineMode || !webAppUrl || !accessKey) return;
+        try {
+            const payload = { action: 'saveFolders', folders: customFolders, key: accessKey };
+            await fetch(webAppUrl, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain' }, redirect: 'follow' });
+        } catch(e) { console.warn('폴더 동기화 실패:', e); }
     }
 
     function openModal(id) {
@@ -760,7 +838,7 @@
     function getGoogleDriveId(u) { if(!u) return null; let m = u.match(/[?&]id=([^&]+)/); if(m) return m[1]; m = u.match(/\/d\/([^/]+)/); if(m) return m[1]; return null; }
     function updateDashboard() { document.getElementById('dashTotal').innerText = notes.length; document.getElementById('dashText').innerText = notes.filter(n=>n.category==='text').length; document.getElementById('dashLife').innerText = notes.filter(n=>n.category==='daily').length; document.getElementById('dashArt').innerText = notes.filter(n=>n.category==='art').length; }
     function renderFolders() { const c = document.getElementById('foldersContainer'); c.innerHTML = `<span class="folder-chip ${viewState.folder==='all'?'active':''}" onclick="viewState.folder='all';renderFolders();refreshUI();">전체보기</span>` + customFolders.map(f => `<span class="folder-chip ${viewState.folder===f?'active':''}" onclick="viewState.folder='${f}';renderFolders();refreshUI();">${f}</span>`).join(''); }
-    function addFolder() { const n = document.getElementById('newFolderName').value.trim(); if(n && !customFolders.includes(n)) { customFolders.push(n); localStorage.setItem('inspirationFolders', JSON.stringify(customFolders)); document.getElementById('newFolderName').value=''; renderFolders(); } }
+    function addFolder() { const n = document.getElementById('newFolderName').value.trim(); if(n && !customFolders.includes(n)) { customFolders.push(n); localStorage.setItem('inspirationFolders', JSON.stringify(customFolders)); document.getElementById('newFolderName').value=''; renderFolders(); syncFolders(); } }
     function openFolderManage() { renderManageFolders(); openModal('folderManageModal'); }
     function renderManageFolders() {
         document.getElementById('manageFolderList').innerHTML = customFolders.map((f, i) =>
@@ -785,6 +863,7 @@
             closeModal('folderDeleteChoiceModal');
             renderManageFolders(); renderFolders(); refreshUI();
             showToast('메모를 [기타]로 이동하고 폴더를 삭제했습니다.');
+            syncFolders();
         };
         document.getElementById('btnDeleteAllNotes').onclick = function() {
             notes = notes.filter(n => n.folder !== folderName);
@@ -794,6 +873,7 @@
             closeModal('folderDeleteChoiceModal');
             renderManageFolders(); renderFolders(); refreshUI();
             showToast('폴더와 내부 메모를 모두 삭제했습니다.');
+            syncFolders();
         };
         openModal('folderDeleteChoiceModal');
     }
