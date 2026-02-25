@@ -270,7 +270,7 @@
     <div class="search-area" id="searchContainer">
         <div class="search-wrapper">
             <div class="search-icon"><i class="ri-search-line"></i></div>
-            <input type="text" class="search-input" id="searchInput" name="main_search_input_unique" placeholder="검색어 또는 #해시태그" autocomplete="new-password">
+            <input type="search" class="search-input" id="searchInput" placeholder="검색어 또는 #해시태그" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
         </div>
     </div>
 
@@ -409,7 +409,7 @@
         <div class="setting-content active" id="contentServer">
             <div class="form-group">
                 <label class="form-label">Google 웹 앱 URL</label>
-                <input type="text" class="form-input" id="settingUrlInput" name="gas_server_url" placeholder="https://script.google.com/macros/s/...">
+                <input type="text" class="form-input" id="settingUrlInput" name="gas_server_url" placeholder="https://script.google.com/macros/s/..." autocomplete="off">
             </div>
             <div class="form-group">
                 <label class="form-label">액세스 키 (설정한 비밀번호)</label>
@@ -480,20 +480,23 @@
     const catIcon = { 'text': 'ri-text', 'daily': 'ri-cup-line', 'art': 'ri-palette-line' };
 
     document.addEventListener('DOMContentLoaded', () => {
-        setTimeout(() => {
-            const searchInput = document.getElementById('searchInput');
-            if(searchInput) {
-                searchInput.value = "";
-                viewState.search = "";
-                refreshUI();
-            }
-        }, 150);
-        
+        // 브라우저 자동완성 차단: 즉시 + 다중 타이밍으로 클리어
+        const searchInput = document.getElementById('searchInput');
+        const clearSearch = () => { if(searchInput && searchInput.value) { searchInput.value = ''; viewState.search = ''; } };
+        clearSearch();
+        setTimeout(clearSearch, 100);
+        setTimeout(clearSearch, 500);
+        setTimeout(clearSearch, 1000);
+
         initApp();
-        
-        document.getElementById('searchInput').addEventListener('input', (e) => { 
-            viewState.search = e.target.value; 
-            refreshUI(); 
+
+        // 초기화 완료 후에만 input 이벤트 연결 (자동완성 입력 무시)
+        let inputReady = false;
+        setTimeout(() => { inputReady = true; }, 1200);
+        searchInput.addEventListener('input', (e) => {
+            if (!inputReady && e.target.value.startsWith('http')) { e.target.value = ''; return; }
+            viewState.search = e.target.value;
+            refreshUI();
         });
         document.getElementById('themeSelector').addEventListener('change', (e) => setTheme(e.target.value));
         document.getElementById('realTagInput').addEventListener('keydown', handleTagInput);
