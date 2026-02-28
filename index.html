@@ -377,14 +377,10 @@
             <label class="form-label">첨부파일</label>
             <label class="file-box" id="fileUploadBtn">
                 <i class="ri-file-add-line" style="font-size:1.6rem;"></i>
-                <span>이미지, PDF 등 파일 선택 또는 이미지 붙여넣기 (Ctrl+V)</span>
-                <input type="file" id="inputFile" style="display:none" onchange="handleFileSelect(this)">
+                <span>이미지·PDF 등 파일 선택 또는 Ctrl+V 붙여넣기 (여러 파일 가능)</span>
+                <input type="file" id="inputFile" style="display:none" multiple onchange="handleFileSelect(this)">
             </label>
-            <div id="filePreviewArea" style="display:none; margin-top:10px; padding:12px; background:#f8f9fa; border-radius:12px; align-items:center; gap:12px;">
-                <img id="uploadImg" style="width:45px; height:45px; border-radius:8px; object-fit:cover;">
-                <div id="uploadInfo" style="flex:1; font-size:0.9rem; font-weight:700; color:#555; overflow:hidden; text-overflow:ellipsis;"></div>
-                <i class="ri-close-circle-fill" style="color:#e74c3c; font-size:1.4rem; cursor:pointer;" onclick="removeFile()"></i>
-            </div>
+            <div id="filePreviewArea" style="display:none; margin-top:10px; flex-wrap:wrap; gap:8px;"></div>
         </div>
         <div class="form-group">
             <label class="form-label">해시태그</label>
@@ -473,7 +469,7 @@
     }
     let viewState = { cat: 'all', folder: 'all', mode: 'grid', gridCols: parseInt(localStorage.getItem('gridCols')) || 2, sort: 'date-desc', search: '' };
     let currentTags = [];
-    let tempFile = null;
+    let tempFiles = [];
 
     const catMap = { 'text': 'TEXT', 'daily': 'LIFE', 'art': 'ART&EDU' };
     const catName = { 'text': '문장/단어', 'daily': '일상', 'art': '예술/교육' };
@@ -502,6 +498,16 @@
         document.getElementById('realTagInput').addEventListener('keydown', handleTagInput);
         document.getElementById('realTagInput').addEventListener('input', handleTagComma);
         document.addEventListener('paste', handlePaste);
+
+        // 상세보기 모달: 바깥 클릭으로 닫기
+        document.getElementById('detailModal').addEventListener('click', (e) => {
+            if (e.target.id === 'detailModal') closeModal('detailModal');
+        });
+        // 뒤로가기로 상세보기 모달 닫기
+        window.addEventListener('popstate', () => {
+            if (document.getElementById('detailModal').style.display === 'flex')
+                document.getElementById('detailModal').style.display = 'none';
+        });
     });
 
     function initApp() {
@@ -776,14 +782,17 @@
             date: new Date().toLocaleDateString(),
             created_at: existingNote ? existingNote.created_at : now
         };
-        const displayFileUrl = tempFile ? tempFile.data : (existingNote ? existingNote.file_url : null);
-        if (editId) notes = notes.map(n => n.id === editId ? {...note, file_url: displayFileUrl} : n);
-        else notes.unshift({...note, file_url: displayFileUrl});
+        const newFiles = tempFiles.filter(f => !f.existing);
+        const existingUrls = existingNote ? (existingNote.file_urls || (existingNote.file_url ? [existingNote.file_url] : [])) : [];
+        const displayFileUrls = tempFiles.length ? tempFiles.map(f => f.data) : existingUrls;
+        const displayFileUrl = displayFileUrls[0] || null;
+        if (editId) notes = notes.map(n => n.id === editId ? {...note, file_url: displayFileUrl, file_urls: displayFileUrls} : n);
+        else notes.unshift({...note, file_url: displayFileUrl, file_urls: displayFileUrls});
         saveToCache(notes); closeModal('writeModal'); refreshUI();
         if (!isOfflineMode && webAppUrl) {
             showLoader(true, "서버에 저장 중...");
             try {
-                const payload = { action: editId ? 'update' : 'create', ...note, file: tempFile, key: accessKey };
+                const payload = { action: editId ? 'update' : 'create', ...note, file: newFiles[0] || null, files: newFiles, key: accessKey };
                 const res = await fetch(webAppUrl, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain' }, redirect: 'follow' });
                 const json = await res.json();
                 if (json.status === 'success') { showToast('서버 저장 완료'); setTimeout(fetchNotes, 1000); }
@@ -841,10 +850,10 @@
             document.getElementById('folderSelect').innerHTML = customFolders.map(f => `<option value="${f}">${f}</option>`).join('') + '<option value="기타">기타</option>';
             document.getElementById('editNoteId').value = "";
             document.querySelectorAll('#writeModal .form-input').forEach(i => i.value = "");
-            removeFile(); currentTags = []; renderTags();
+            tempFiles = []; renderFilePreviews(); currentTags = []; renderTags();
         }
     }
-    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; if (id === 'detailModal' && history.state?.detailOpen) history.back(); }
     function showLoader(s, t) { document.getElementById('loader').style.display = s ? 'flex' : 'none'; if(t) document.getElementById('loaderText').innerText = t; }
     function showToast(m) { const t = document.createElement('div'); t.className='toast'; t.innerHTML=`<span>${m}</span>`; document.getElementById('toastContainer').appendChild(t); setTimeout(()=>t.remove(), 3000); }
     function setCategory(c) { viewState.cat = c; document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.innerText.includes(catName[c]) || (c==='all' && b.innerText==='전체'))); refreshUI(); }
@@ -896,43 +905,54 @@
     function handleTagComma(e) { if(e.target.value.includes(',')) { e.target.value.split(',').forEach(t=>addTag(t)); e.target.value=''; } }
     function addTag(t) { const s = t.trim().replace(/^#/,''); if(s && !currentTags.includes('#'+s)) { currentTags.push('#'+s); renderTags(); } document.getElementById('realTagInput').value=''; }
     function renderTags() { const c = document.getElementById('tagInputContainer'); const i = document.getElementById('realTagInput'); Array.from(c.children).forEach(x=>{if(x!==i)x.remove()}); currentTags.forEach((t,x)=>{ const s=document.createElement('span'); s.className='tag-block'; s.innerHTML=`${t} <i class="ri-close-line" onclick="currentTags.splice(${x},1);renderTags();"></i>`; c.insertBefore(s,i); }); }
-    function handleFileSelect(i) { const f=i.files[0]; if(!f) return; const r=new FileReader(); r.onload=(e)=>{ tempFile={name:f.name, type:f.type, data:e.target.result}; updateFileUI(f.name, f.type, e.target.result); }; r.readAsDataURL(f); }
-    function handlePaste(e) {
-      const modal = document.getElementById('writeModal');
-      if (!modal || modal.style.display === 'none') return;
-      const items = (e.clipboardData || e.originalEvent?.clipboardData)?.items;
-      if (!items) return;
-      for (const item of items) {
-        if (!item.type.startsWith('image/')) continue;
-        const file = item.getAsFile();
-        if (!file) continue;
-        const r = new FileReader();
-        r.onload = (ev) => {
-          const ext = item.type.split('/')[1] || 'png';
-          const name = `clipboard_${Date.now()}.${ext}`;
-          tempFile = { name, type: item.type, data: ev.target.result };
-          updateFileUI(name, item.type, ev.target.result);
-        };
-        r.readAsDataURL(file);
-        e.preventDefault();
-        break;
-      }
+    function handleFileSelect(input) {
+        const files = Array.from(input.files);
+        if (!files.length) return;
+        files.forEach(f => { const r=new FileReader(); r.onload=(e)=>{ tempFiles.push({name:f.name, type:f.type, data:e.target.result}); renderFilePreviews(); }; r.readAsDataURL(f); });
+        input.value = '';
     }
-    function removeFile() { tempFile=null; document.getElementById('filePreviewArea').style.display='none'; document.getElementById('fileUploadBtn').style.display='flex'; }
-    function updateFileUI(n,t,d) { document.getElementById('fileUploadBtn').style.display='none'; const area=document.getElementById('filePreviewArea'); area.style.display='flex'; document.getElementById('uploadInfo').innerText=n; const g=document.getElementById('uploadImg'); if(t.startsWith('image/')){g.src=d; g.style.display='block';}else g.style.display='none'; }
-    function openEditModal(id) { const n=notes.find(x=>x.id===id); if(!n) return; openModal('writeModal'); document.getElementById('modalTitle').innerHTML="✏️ 영감 수정"; document.getElementById('editNoteId').value=id; document.getElementById('inputCategory').value=n.category; document.getElementById('folderSelect').value=n.folder; document.getElementById('inputTitle').value=n.title; document.getElementById('inputContent').value=n.content || ''; document.getElementById('inputLink').value=n.link || ''; currentTags=[...(n.tags||[])]; renderTags(); if(n.file_url) updateFileUI('기존 파일', n.file_url.startsWith('data:image')?'image/':'', n.file_url); }
-    
-    function openDetail(n) { 
-        const c = document.getElementById('detailContent'); 
-        let mediaArea = ''; 
-        if(n.file_url) { 
-            if(n.file_url.startsWith('data:')) {
-                mediaArea += n.file_url.startsWith('data:image') ? `<img src="${n.file_url}" style="width:100%; margin-top:20px; border-radius:15px; box-shadow:0 4px 15px rgba(0,0,0,0.05);">` : ''; 
-            } else { 
-                const d=getGoogleDriveId(n.file_url); 
-                mediaArea += d ? `<iframe src="https://drive.google.com/file/d/${d}/preview" style="width:100%; height:450px; border-radius:15px; border:1px solid #eee; margin-top:20px;"></iframe>` : `<div style="margin-top:15px; padding:15px; background:var(--sub); border-radius:12px;"><a href="${n.file_url}" target="_blank" style="color:var(--main); font-weight:700; text-decoration:none;"><i class="ri-file-line"></i> 파일 보기</a></div>`; 
-            } 
+    function handlePaste(e) {
+        const modal = document.getElementById('writeModal');
+        if (!modal || modal.style.display === 'none') return;
+        const items = (e.clipboardData || e.originalEvent?.clipboardData)?.items;
+        if (!items) return;
+        for (const item of items) {
+            if (!item.type.startsWith('image/')) continue;
+            const file = item.getAsFile();
+            if (!file) continue;
+            const r = new FileReader();
+            r.onload = (ev) => { const ext=item.type.split('/')[1]||'png'; tempFiles.push({name:`clipboard_${Date.now()}.${ext}`, type:item.type, data:ev.target.result}); renderFilePreviews(); };
+            r.readAsDataURL(file);
+            e.preventDefault();
+            break;
         }
+    }
+    function removeFile(i) { tempFiles.splice(i, 1); renderFilePreviews(); }
+    function renderFilePreviews() {
+        const area = document.getElementById('filePreviewArea');
+        if (!tempFiles.length) { area.style.display='none'; return; }
+        area.style.display = 'flex';
+        area.innerHTML = tempFiles.map((f,i) => {
+            const thumb = f.type.startsWith('image/')
+                ? `<img src="${f.data}" style="width:72px;height:72px;object-fit:cover;border-radius:10px;display:block;">`
+                : `<div style="width:72px;height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#f0f0f0;border-radius:10px;gap:3px;padding:4px;"><i class="ri-file-line" style="font-size:1.6rem;color:var(--main);"></i><span style="font-size:0.6rem;color:#666;text-align:center;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${f.name}</span></div>`;
+            return `<div style="position:relative;flex-shrink:0;">${thumb}<button onclick="removeFile(${i})" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#e74c3c;border:none;color:#fff;cursor:pointer;font-size:0.8rem;padding:0;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 5px rgba(0,0,0,0.2);">×</button></div>`;
+        }).join('');
+    }
+    function openEditModal(id) { const n=notes.find(x=>x.id===id); if(!n) return; openModal('writeModal'); document.getElementById('modalTitle').innerHTML="✏️ 영감 수정"; document.getElementById('editNoteId').value=id; document.getElementById('inputCategory').value=n.category; document.getElementById('folderSelect').value=n.folder; document.getElementById('inputTitle').value=n.title; document.getElementById('inputContent').value=n.content || ''; document.getElementById('inputLink').value=n.link || ''; currentTags=[...(n.tags||[])]; renderTags(); const existingUrls=n.file_urls||(n.file_url?[n.file_url]:[]); tempFiles=existingUrls.map((url,idx)=>({name:idx===0?'기존 파일':`기존 파일 ${idx+1}`, type:url.startsWith('data:image')?'image/jpeg':'application/octet-stream', data:url, existing:true})); renderFilePreviews(); }
+    
+    function openDetail(n) {
+        const c = document.getElementById('detailContent');
+        let mediaArea = '';
+        const fileUrls = n.file_urls || (n.file_url ? [n.file_url] : []);
+        fileUrls.forEach(fileUrl => {
+            if(fileUrl.startsWith('data:')) {
+                mediaArea += fileUrl.startsWith('data:image') ? `<img src="${fileUrl}" style="width:100%; margin-top:20px; border-radius:15px; box-shadow:0 4px 15px rgba(0,0,0,0.05);">` : '';
+            } else {
+                const d=getGoogleDriveId(fileUrl);
+                mediaArea += d ? `<iframe src="https://drive.google.com/file/d/${d}/preview" style="width:100%; height:450px; border-radius:15px; border:1px solid #eee; margin-top:20px;"></iframe>` : `<div style="margin-top:15px; padding:15px; background:var(--sub); border-radius:12px;"><a href="${fileUrl}" target="_blank" style="color:var(--main); font-weight:700; text-decoration:none;"><i class="ri-file-line"></i> 파일 보기</a></div>`;
+            }
+        });
         let linkArea = '';
         if (n.link) {
             const ytId = getYoutubeId(n.link);
@@ -950,7 +970,8 @@
                 ${(n.tags || []).map(t=>`<span onclick="filterByTag('${t}')" style="padding:8px 16px; background:var(--bg); color:var(--main); border-radius:12px; font-size:0.85rem; font-weight:700; cursor:pointer; transition:var(--trans); border:1.5px solid transparent;" onmouseover="this.style.borderColor='var(--main)'" onmouseout="this.style.borderColor='transparent'">${t}</span>`).join('')}
             </div>
         `; 
-        document.getElementById('detailModal').style.display='flex'; 
+        history.pushState({ detailOpen: true }, '');
+        document.getElementById('detailModal').style.display='flex';
     }
     function exportData() { if(notes.length===0) return; const b=new Blob([JSON.stringify(notes,null,2)],{type:'application/json'}); const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u; a.download='inspiration_backup.json'; a.click(); }
     function importData(i) { const f=i.files[0]; if(!f) return; const r=new FileReader(); r.onload=(e)=>{ try { notes=JSON.parse(e.target.result); saveToCache(notes); refreshUI(); alert("데이터 복구 완료!"); } catch(e) { alert("올바른 형식이 아닙니다."); } }; r.readAsText(f); }
