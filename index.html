@@ -565,10 +565,13 @@
             const json = await res.json();
 
             if (json.status === "success") {
+                const prevUrls = {};
+                notes.forEach(n => { if (n.file_urls?.length > 1) prevUrls[n.id] = n.file_urls; });
                 notes = json.data.map(n => ({
                     ...n, id: String(n.id),
                     tags: typeof n.tags === 'string' ? n.tags.split(',').filter(t=>t) : (n.tags || []),
-                    deleted_at: null
+                    deleted_at: null,
+                    ...(prevUrls[String(n.id)] ? { file_urls: prevUrls[String(n.id)] } : {})
                 }));
                 // 서버 폴더 동기화
                 if (Array.isArray(json.folders) && json.folders.length > 0) {
@@ -603,7 +606,12 @@
 
     function saveToCache(data) {
         try {
-            const cacheData = data.map(n => (n.file_url && n.file_url.startsWith('data:')) ? { ...n, file_url: '' } : n);
+            const cacheData = data.map(n => {
+                const s = { ...n };
+                if (s.file_url?.startsWith('data:')) s.file_url = '';
+                if (s.file_urls) s.file_urls = s.file_urls.map(u => u?.startsWith('data:') ? '' : u);
+                return s;
+            });
             localStorage.setItem('notes_cache', JSON.stringify(cacheData));
         } catch (e) { console.warn("Cache Full"); }
     }
@@ -941,18 +949,34 @@
     }
     function openEditModal(id) { const n=notes.find(x=>x.id===id); if(!n) return; openModal('writeModal'); document.getElementById('modalTitle').innerHTML="✏️ 영감 수정"; document.getElementById('editNoteId').value=id; document.getElementById('inputCategory').value=n.category; document.getElementById('folderSelect').value=n.folder; document.getElementById('inputTitle').value=n.title; document.getElementById('inputContent').value=n.content || ''; document.getElementById('inputLink').value=n.link || ''; currentTags=[...(n.tags||[])]; renderTags(); const existingUrls=n.file_urls||(n.file_url?[n.file_url]:[]); tempFiles=existingUrls.map((url,idx)=>({name:idx===0?'기존 파일':`기존 파일 ${idx+1}`, type:url.startsWith('data:image')?'image/jpeg':'application/octet-stream', data:url, existing:true})); renderFilePreviews(); }
     
+    let _sliderTouchX = 0;
+    function sliderNav(dir) { const s=document.getElementById('mediaSlider'); if(!s) return; sliderGoto((parseInt(s.dataset.current)+dir+parseInt(s.dataset.total))%parseInt(s.dataset.total)); }
+    function sliderGoto(i) { const s=document.getElementById('mediaSlider'); if(!s) return; s.dataset.current=i; document.getElementById('sliderTrack').style.transform=`translateX(-${i*100}%)`; document.querySelectorAll('#sliderDots span').forEach((d,idx)=>{ d.style.opacity=idx===i?'1':'0.4'; d.style.width=idx===i?'20px':'8px'; }); }
+    function sliderTouchStart(e) { _sliderTouchX = e.touches[0].clientX; }
+    function sliderTouchEnd(e) { const diff=_sliderTouchX-e.changedTouches[0].clientX; if(Math.abs(diff)>40) sliderNav(diff>0?1:-1); }
+    function buildMediaSlider(fileUrls) {
+        if (!fileUrls.length) return '';
+        const renderItem = url => {
+            if (url.startsWith('data:image')) return `<img src="${url}" style="width:100%;max-height:420px;object-fit:contain;display:block;border-radius:12px;">`;
+            const d = getGoogleDriveId(url);
+            if (d) return `<iframe src="https://drive.google.com/file/d/${d}/preview" style="width:100%;height:380px;border:none;border-radius:12px;"></iframe>`;
+            return `<div style="display:flex;align-items:center;justify-content:center;height:100px;"><a href="${url}" target="_blank" style="color:var(--main);font-weight:700;text-decoration:none;"><i class="ri-file-line"></i> 파일 보기</a></div>`;
+        };
+        if (fileUrls.length === 1) return `<div style="margin-top:20px;">${renderItem(fileUrls[0])}</div>`;
+        const slides = fileUrls.map(u => `<div style="min-width:100%;box-sizing:border-box;">${renderItem(u)}</div>`).join('');
+        const dots = fileUrls.map((_,i) => `<span onclick="sliderGoto(${i})" style="display:inline-block;height:8px;width:${i===0?'20px':'8px'};border-radius:4px;background:var(--main);opacity:${i===0?'1':'0.4'};cursor:pointer;transition:all 0.25s;margin:0 3px;"></span>`).join('');
+        return `<div id="mediaSlider" data-current="0" data-total="${fileUrls.length}" style="position:relative;margin-top:20px;border-radius:15px;overflow:hidden;background:var(--bg);padding-bottom:28px;" ontouchstart="sliderTouchStart(event)" ontouchend="sliderTouchEnd(event)">
+            <div id="sliderTrack" style="display:flex;transition:transform 0.32s cubic-bezier(.4,0,.2,1);">${slides}</div>
+            <button onclick="sliderNav(-1)" style="position:absolute;left:8px;top:calc(50% - 14px);transform:translateY(-50%);width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,0.38);border:none;color:#fff;font-size:1.4rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;line-height:1;">‹</button>
+            <button onclick="sliderNav(1)" style="position:absolute;right:8px;top:calc(50% - 14px);transform:translateY(-50%);width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,0.38);border:none;color:#fff;font-size:1.4rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;line-height:1;">›</button>
+            <div id="sliderDots" style="position:absolute;bottom:6px;left:0;right:0;text-align:center;z-index:2;">${dots}</div>
+        </div>`;
+    }
+
     function openDetail(n) {
         const c = document.getElementById('detailContent');
-        let mediaArea = '';
-        const fileUrls = n.file_urls || (n.file_url ? [n.file_url] : []);
-        fileUrls.forEach(fileUrl => {
-            if(fileUrl.startsWith('data:')) {
-                mediaArea += fileUrl.startsWith('data:image') ? `<img src="${fileUrl}" style="width:100%; margin-top:20px; border-radius:15px; box-shadow:0 4px 15px rgba(0,0,0,0.05);">` : '';
-            } else {
-                const d=getGoogleDriveId(fileUrl);
-                mediaArea += d ? `<iframe src="https://drive.google.com/file/d/${d}/preview" style="width:100%; height:450px; border-radius:15px; border:1px solid #eee; margin-top:20px;"></iframe>` : `<div style="margin-top:15px; padding:15px; background:var(--sub); border-radius:12px;"><a href="${fileUrl}" target="_blank" style="color:var(--main); font-weight:700; text-decoration:none;"><i class="ri-file-line"></i> 파일 보기</a></div>`;
-            }
-        });
+        const fileUrls = (n.file_urls || (n.file_url ? [n.file_url] : [])).filter(u => u);
+        const mediaArea = buildMediaSlider(fileUrls);
         let linkArea = '';
         if (n.link) {
             const ytId = getYoutubeId(n.link);
