@@ -285,7 +285,13 @@
     <div class="search-area" id="searchContainer">
         <div class="search-wrapper">
             <div class="search-icon"><i class="ri-search-line"></i></div>
-            <input type="text" class="search-input" id="searchInput" placeholder="검색어 또는 #해시태그" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false">
+            <input type="text" class="search-input" id="searchInput"
+                placeholder="검색어 또는 #해시태그"
+                autocomplete="new-password"
+                data-lpignore="true"
+                data-form-type="other"
+                aria-autocomplete="none"
+                autocorrect="off" autocapitalize="off" spellcheck="false">
         </div>
     </div>
 
@@ -491,27 +497,32 @@
     const catIcon = { 'text': 'ri-text', 'daily': 'ri-cup-line', 'art': 'ri-palette-line' };
 
     document.addEventListener('DOMContentLoaded', () => {
-        // 브라우저 자동완성 차단: 즉시 + 다중 타이밍으로 클리어
         const searchInput = document.getElementById('searchInput');
-        // 자동완성 차단: inputReady 전에는 값 주입 즉시 제거
-        let inputReady = false;
+
+        // 자동완성 차단: 사용자가 직접 키를 누르기 전까지 어떤 값도 허용하지 않음
+        // 시간 기반 해제(2초)를 사용자 행동 기반으로 교체 — Chrome이 포커스 시 주입해도 차단
+        let userTyped = false;
         const guardSearch = () => {
-            if (!inputReady && searchInput.value) {
+            if (!userTyped && searchInput.value) {
                 searchInput.value = '';
                 viewState.search = '';
             }
         };
-        // setInterval 폴링: 이벤트를 발생시키지 않는 비밀번호 관리자 주입도 차단
+        // 50ms 폴링: input 이벤트 없이 직접 DOM에 값을 주입하는 비밀번호 관리자도 차단
         const autofillGuard = setInterval(guardSearch, 50);
-        setTimeout(() => {
-            clearInterval(autofillGuard);
-            inputReady = true;
-        }, 2000);
+
+        // 사용자가 실제로 키를 누른 순간에만 가드 해제
+        searchInput.addEventListener('keydown', () => {
+            if (!userTyped) {
+                userTyped = true;
+                clearInterval(autofillGuard);
+            }
+        });
 
         initApp();
 
         searchInput.addEventListener('input', (e) => {
-            if (!inputReady) { e.target.value = ''; viewState.search = ''; return; }
+            if (!userTyped) { e.target.value = ''; viewState.search = ''; return; }
             viewState.search = e.target.value;
             refreshUI();
         });
