@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" data-theme="blue">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -13,6 +13,15 @@
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=ev_shadow,light" />
 
+    <script>
+        // 테마를 CSS 렌더링 전에 즉시 적용 (깜빡임 방지)
+        (function() {
+            var t = localStorage.getItem('theme');
+            if (t && ['blue','green','yellow','red','dark'].indexOf(t) !== -1) {
+                document.documentElement.setAttribute('data-theme', t);
+            }
+        })();
+    </script>
     <style>
         /* 🎨 디자인 토큰 및 테마 설정 */
         :root { --font-main: 'Pretendard GOV', sans-serif; --radius: 16px; --trans: all 0.2s ease; }
@@ -486,14 +495,17 @@
 
         initApp();
 
-        // 초기화 완료 후에만 input 이벤트 연결 (자동완성 입력 무시)
+        // 초기화 완료 후에만 input 이벤트 연결 (자동완성/자동입력 전체 차단)
         let inputReady = false;
         setTimeout(() => { inputReady = true; }, 1200);
         searchInput.addEventListener('input', (e) => {
-            if (!inputReady && e.target.value.startsWith('http')) { e.target.value = ''; return; }
+            if (!inputReady) { e.target.value = ''; viewState.search = ''; return; }
             viewState.search = e.target.value;
             refreshUI();
         });
+        // readonly 속성으로 브라우저 자동완성 원천 차단 후 해제
+        searchInput.setAttribute('readonly', true);
+        setTimeout(() => { searchInput.removeAttribute('readonly'); }, 300);
         document.getElementById('themeSelector').addEventListener('change', (e) => setTheme(e.target.value));
         document.getElementById('realTagInput').addEventListener('keydown', handleTagInput);
         document.getElementById('realTagInput').addEventListener('input', handleTagComma);
