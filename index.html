@@ -590,10 +590,13 @@
         }
     }
 
-    async function fetchNotes() {
+    async function fetchNotes(opts = {}) {
+        const silent = !!opts.silent;
         if (!webAppUrl || isOfflineMode) return;
-        updateStatusUI('connecting', '동기화 중...');
-        showLoader(true);
+        if (!silent) {
+            updateStatusUI('connecting', '동기화 중...');
+            showLoader(true, '서버 동기화 중...');
+        }
         
         try {
             const params = new URLSearchParams({ action: 'read', key: accessKey, t: Date.now() });
@@ -604,10 +607,7 @@
                 const prevUrls = {};
                 notes.forEach(n => {
                     const allUrls = (n.file_urls || []).filter(Boolean);
-                    if (allUrls.length > 1) {
-                        const driveUrls = allUrls.filter(u => !u.startsWith('data:'));
-                        if (driveUrls.length > 0) prevUrls[n.id] = driveUrls;
-                    }
+                    if (allUrls.length > 0) prevUrls[n.id] = allUrls;
                 });
                 notes = json.data.map(n => {
                     const raw = String(n.file_url || '');
@@ -647,7 +647,9 @@
         } catch (e) {
             updateStatusUI('error', '연결 실패');
             loadFromCache();
-        } finally { showLoader(false); }
+        } finally {
+            if (!silent) showLoader(false);
+        }
     }
 
     function disconnectServer() {
@@ -916,7 +918,7 @@
                     if (Array.isArray(json.file_urls) && json.file_urls.length) {
                         notes = notes.map(n => n.id === note.id ? {...n, file_url: json.file_urls[0], file_urls: json.file_urls} : n);
                         saveToCache(notes); refreshUI();
-                    } else { setTimeout(fetchNotes, 1000); }
+                    } else { setTimeout(() => fetchNotes({ silent: true }), 1000); }
                 }
             } catch(e) { showToast('서버 저장 중 오류 발생'); }
             finally { showLoader(false); }
