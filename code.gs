@@ -133,6 +133,14 @@ function handleRead() {
       let tags = [];
       try { tags = row[7] ? JSON.parse(row[7]) : []; } catch (e) { tags = []; }
 
+      var rawFileUrl = String(row[6] || '');
+      var parsedUrls = [];
+      if (rawFileUrl) {
+        try {
+          var parsed = JSON.parse(rawFileUrl);
+          parsedUrls = Array.isArray(parsed) ? parsed.filter(function(u) { return !!u; }) : [rawFileUrl];
+        } catch(e) { parsedUrls = [rawFileUrl]; }
+      }
       return {
         id:         String(row[0] || ''),
         category:   String(row[1] || ''),
@@ -140,7 +148,8 @@ function handleRead() {
         title:      String(row[3] || ''),
         content:    String(row[4] || ''),
         link:       String(row[5] || ''),
-        file_url:   String(row[6] || ''),
+        file_url:   parsedUrls[0] || rawFileUrl || '',
+        file_urls:  parsedUrls,
         tags:       tags,
         date:       String(row[8] || ''),
         created_at: row[9] ? Number(row[9]) : 0
@@ -156,8 +165,10 @@ function handleCreate(data) {
   const lock = LockService.getScriptLock();
   lock.waitLock(15000);
   try {
-    const sheet   = getSheet();
-    const fileUrl = uploadFileIfPresent(data.file);
+    const sheet    = getSheet();
+    var filesArr   = Array.isArray(data.files) ? data.files : (data.file ? [data.file] : []);
+    var uploadedUrls = filesArr.map(function(f) { return uploadFileIfPresent(f); }).filter(function(u) { return !!u; });
+    var fileUrl    = uploadedUrls.length > 1 ? JSON.stringify(uploadedUrls) : (uploadedUrls[0] || '');
 
     // 컬럼 순서: id | category | folder | title | content | link | file_url | tags | date | created_at
     sheet.appendRow([
@@ -203,9 +214,15 @@ function handleUpdate(data) {
       return responseJSON({ status: 'error', message: '해당 ID의 메모를 찾을 수 없습니다.' });
     }
 
-    // 파일: 새 파일이 있으면 업로드, 없으면 기존 URL 유지 (file_url = 7번째 컬럼)
-    let fileUrl;
-    if (data.file && data.file.data) {
+    // 파일: existingFileUrls + 새 파일 업로드 → 복수 URL JSON 저장
+    var fileUrl;
+    if (data.existingFileUrls !== undefined) {
+      var existingToKeep = (data.existingFileUrls || []).filter(function(u) { return !!u; });
+      var filesArr = Array.isArray(data.files) ? data.files : [];
+      var newUrls  = filesArr.map(function(f) { return uploadFileIfPresent(f); }).filter(function(u) { return !!u; });
+      var allUrls  = existingToKeep.concat(newUrls);
+      fileUrl = allUrls.length > 1 ? JSON.stringify(allUrls) : (allUrls[0] || '');
+    } else if (data.file && data.file.data) {
       fileUrl = uploadFileIfPresent(data.file);
     } else {
       fileUrl = String(sheet.getRange(rowIndex, 7).getValue() || '');
