@@ -621,7 +621,9 @@
                         serverUrls = raw ? [raw] : [];
                     }
                     const fallback = prevUrls[String(n.id)] || [];
-                    const fileUrls = serverUrls.length ? serverUrls : fallback;
+                    const fileUrls = serverUrls.length >= fallback.length
+                        ? serverUrls
+                        : fallback;
                     return {
                         ...n, id: String(n.id),
                         tags: typeof n.tags === 'string' ? n.tags.split(',').filter(t=>t) : (n.tags || []),
@@ -916,7 +918,19 @@
                 if (json.status === 'success') {
                     showToast('서버 저장 완료');
                     if (Array.isArray(json.file_urls) && json.file_urls.length) {
-                        notes = notes.map(n => n.id === note.id ? {...n, file_url: json.file_urls[0], file_urls: json.file_urls} : n);
+                        let finalServerUrls = uniqNonEmpty(json.file_urls.filter(u => !String(u).startsWith('data:')));
+                        const expectedServerCount = existingFileUrls.length + newFiles.length;
+                        if (finalServerUrls.length < expectedServerCount && newFiles.length) {
+                            const alreadyUploadedNew = Math.max(0, finalServerUrls.length - existingFileUrls.length);
+                            const missingFiles = newFiles.slice(alreadyUploadedNew);
+                            try {
+                                finalServerUrls = await uploadMissingFiles(note, finalServerUrls, missingFiles);
+                            } catch (uploadErr) {
+                                console.warn('누락 파일 재업로드 실패:', uploadErr);
+                            }
+                        }
+                        const displayUrls = finalServerUrls.length ? finalServerUrls : displayFileUrls;
+                        notes = notes.map(n => n.id === note.id ? {...n, file_url: displayUrls[0], file_urls: displayUrls} : n);
                         saveToCache(notes); refreshUI();
                     } else { setTimeout(() => fetchNotes({ silent: true }), 1000); }
                 }
@@ -984,6 +998,7 @@
     function setSortMode(s) { viewState.sort = s; refreshUI(); }
     function switchSettingTab(t) { document.querySelectorAll('.setting-tab').forEach(x=>x.classList.remove('active')); document.querySelectorAll('.setting-content').forEach(x=>x.classList.remove('active')); document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.add('active'); document.getElementById('content'+t.charAt(0).toUpperCase()+t.slice(1)).classList.add('active'); }
     function getGoogleDriveId(u) { if(!u) return null; let m = u.match(/[?&]id=([^&]+)/); if(m) return m[1]; m = u.match(/\/d\/([^/]+)/); if(m) return m[1]; return null; }
+    function uniqNonEmpty(arr) { return [...new Set((arr || []).filter(Boolean))]; }
     function getFileUrls(note) {
         if (note.file_urls?.filter(Boolean).length) return note.file_urls.filter(Boolean);
         const raw = String(note.file_url || '');
@@ -992,6 +1007,30 @@
             try { const p = JSON.parse(raw); if (Array.isArray(p)) return p.filter(Boolean); } catch(e) {}
         }
         return [raw];
+    }
+    async function uploadMissingFiles(note, existingServerUrls, missingFiles) {
+        if (!missingFiles.length) return uniqNonEmpty(existingServerUrls);
+        let serverUrls = uniqNonEmpty(existingServerUrls.filter(u => !String(u).startsWith('data:')));
+        for (const file of missingFiles) {
+            const payload = {
+                action: 'update',
+                ...note,
+                files: [file],
+                file: file,
+                existingFileUrls: serverUrls,
+                key: accessKey
+            };
+            const res = await fetch(webAppUrl, {
+                method: 'POST',
+                body: JSON.stringify(payload),
+                headers: { 'Content-Type': 'text/plain' },
+                redirect: 'follow'
+            });
+            const json = await res.json();
+            if (json.status !== 'success') break;
+            serverUrls = uniqNonEmpty((json.file_urls || []).filter(u => !String(u).startsWith('data:')));
+        }
+        return serverUrls;
     }
     function updateDashboard() { document.getElementById('dashTotal').innerText = notes.length; document.getElementById('dashText').innerText = notes.filter(n=>n.category==='text').length; document.getElementById('dashLife').innerText = notes.filter(n=>n.category==='daily').length; document.getElementById('dashArt').innerText = notes.filter(n=>n.category==='art').length; }
     function renderFolders() { const c = document.getElementById('foldersContainer'); c.innerHTML = `<span class="folder-chip ${viewState.folder==='all'?'active':''}" onclick="viewState.folder='all';renderFolders();refreshUI();">전체보기</span>` + customFolders.map(f => `<span class="folder-chip ${viewState.folder===f?'active':''}" onclick="viewState.folder='${f}';renderFolders();refreshUI();">${f}</span>`).join(''); }
