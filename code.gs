@@ -185,7 +185,7 @@ function handleCreate(data) {
     ]);
 
     Logger.log('생성 완료 — ID: ' + data.id);
-    return responseJSON({ status: 'success' });
+    return responseJSON({ status: 'success', file_url: uploadedUrls[0] || '', file_urls: uploadedUrls });
   } finally {
     lock.releaseLock();
   }
@@ -243,7 +243,12 @@ function handleUpdate(data) {
     ]]);
 
     Logger.log('수정 완료 — ID: ' + targetId + ' (행: ' + rowIndex + ')');
-    return responseJSON({ status: 'success' });
+    var resultUrls;
+    try {
+      var rp = JSON.parse(fileUrl);
+      resultUrls = Array.isArray(rp) ? rp.filter(function(u) { return !!u; }) : (fileUrl ? [fileUrl] : []);
+    } catch(e) { resultUrls = fileUrl ? [fileUrl] : []; }
+    return responseJSON({ status: 'success', file_url: resultUrls[0] || '', file_urls: resultUrls });
   } finally {
     lock.releaseLock();
   }
