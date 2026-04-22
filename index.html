@@ -610,14 +610,23 @@
                     }
                 });
                 notes = json.data.map(n => {
-                    const serverUrls = Array.isArray(n.file_urls) ? n.file_urls.filter(Boolean) : [];
-                    const fallback = prevUrls[String(n.id)] || (n.file_url ? [n.file_url] : []);
+                    const raw = String(n.file_url || '');
+                    let serverUrls;
+                    if (Array.isArray(n.file_urls) && n.file_urls.filter(Boolean).length) {
+                        serverUrls = n.file_urls.filter(Boolean);
+                    } else if (raw.startsWith('[')) {
+                        try { const p = JSON.parse(raw); serverUrls = Array.isArray(p) ? p.filter(Boolean) : (raw ? [raw] : []); }
+                        catch(e) { serverUrls = raw ? [raw] : []; }
+                    } else {
+                        serverUrls = raw ? [raw] : [];
+                    }
+                    const fallback = prevUrls[String(n.id)] || [];
                     const fileUrls = serverUrls.length ? serverUrls : fallback;
                     return {
                         ...n, id: String(n.id),
                         tags: typeof n.tags === 'string' ? n.tags.split(',').filter(t=>t) : (n.tags || []),
                         deleted_at: null,
-                        file_url: fileUrls[0] || n.file_url || '',
+                        file_url: fileUrls[0] || '',
                         file_urls: fileUrls
                     };
                 });
@@ -810,7 +819,7 @@
                 
                 let preview = '';
                 if(viewState.mode === 'grid') {
-                    const files = (note.file_urls?.filter(Boolean).length ? note.file_urls.filter(Boolean) : (note.file_url ? [note.file_url] : []));
+                    const files = getFileUrls(note);
                     const imageUrls = files.filter(u => u.startsWith('data:image') || !!getGoogleDriveId(u));
                     if (imageUrls.length > 1) {
                         const slides = imageUrls.map(u => {
@@ -973,6 +982,15 @@
     function setSortMode(s) { viewState.sort = s; refreshUI(); }
     function switchSettingTab(t) { document.querySelectorAll('.setting-tab').forEach(x=>x.classList.remove('active')); document.querySelectorAll('.setting-content').forEach(x=>x.classList.remove('active')); document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.add('active'); document.getElementById('content'+t.charAt(0).toUpperCase()+t.slice(1)).classList.add('active'); }
     function getGoogleDriveId(u) { if(!u) return null; let m = u.match(/[?&]id=([^&]+)/); if(m) return m[1]; m = u.match(/\/d\/([^/]+)/); if(m) return m[1]; return null; }
+    function getFileUrls(note) {
+        if (note.file_urls?.filter(Boolean).length) return note.file_urls.filter(Boolean);
+        const raw = String(note.file_url || '');
+        if (!raw) return [];
+        if (raw.startsWith('[')) {
+            try { const p = JSON.parse(raw); if (Array.isArray(p)) return p.filter(Boolean); } catch(e) {}
+        }
+        return [raw];
+    }
     function updateDashboard() { document.getElementById('dashTotal').innerText = notes.length; document.getElementById('dashText').innerText = notes.filter(n=>n.category==='text').length; document.getElementById('dashLife').innerText = notes.filter(n=>n.category==='daily').length; document.getElementById('dashArt').innerText = notes.filter(n=>n.category==='art').length; }
     function renderFolders() { const c = document.getElementById('foldersContainer'); c.innerHTML = `<span class="folder-chip ${viewState.folder==='all'?'active':''}" onclick="viewState.folder='all';renderFolders();refreshUI();">전체보기</span>` + customFolders.map(f => `<span class="folder-chip ${viewState.folder===f?'active':''}" onclick="viewState.folder='${f}';renderFolders();refreshUI();">${f}</span>`).join(''); }
     function addFolder() { const n = document.getElementById('newFolderName').value.trim(); if(n && !customFolders.includes(n)) { customFolders.push(n); localStorage.setItem('inspirationFolders', JSON.stringify(customFolders)); document.getElementById('newFolderName').value=''; renderFolders(); syncFolders(); } }
@@ -1052,7 +1070,7 @@
             return `<div style="position:relative;flex-shrink:0;">${thumb}<button onclick="removeFile(${i})" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#e74c3c;border:none;color:#fff;cursor:pointer;font-size:0.8rem;padding:0;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 5px rgba(0,0,0,0.2);">×</button></div>`;
         }).join('');
     }
-    function openEditModal(id) { const n=notes.find(x=>x.id===id); if(!n) return; openModal('writeModal'); document.getElementById('modalTitle').innerHTML="✏️ 영감 수정"; document.getElementById('editNoteId').value=id; document.getElementById('inputCategory').value=n.category; document.getElementById('folderSelect').value=n.folder; document.getElementById('inputTitle').value=n.title; document.getElementById('inputContent').value=n.content || ''; document.getElementById('linkInputs').innerHTML=''; const _links=parseLinks(n.link); (_links.length?_links:['']).forEach(l=>addLinkInput(l)); currentTags=[...(n.tags||[])]; renderTags(); const existingUrls=n.file_urls||(n.file_url?[n.file_url]:[]); tempFiles=existingUrls.map((url,idx)=>({name:idx===0?'기존 파일':`기존 파일 ${idx+1}`, type:url.startsWith('data:image')?'image/jpeg':'application/octet-stream', data:url, existing:true})); renderFilePreviews(); }
+    function openEditModal(id) { const n=notes.find(x=>x.id===id); if(!n) return; openModal('writeModal'); document.getElementById('modalTitle').innerHTML="✏️ 영감 수정"; document.getElementById('editNoteId').value=id; document.getElementById('inputCategory').value=n.category; document.getElementById('folderSelect').value=n.folder; document.getElementById('inputTitle').value=n.title; document.getElementById('inputContent').value=n.content || ''; document.getElementById('linkInputs').innerHTML=''; const _links=parseLinks(n.link); (_links.length?_links:['']).forEach(l=>addLinkInput(l)); currentTags=[...(n.tags||[])]; renderTags(); const existingUrls=getFileUrls(n); tempFiles=existingUrls.map((url,idx)=>({name:idx===0?'기존 파일':`기존 파일 ${idx+1}`, type:url.startsWith('data:image')?'image/jpeg':'application/octet-stream', data:url, existing:true})); renderFilePreviews(); }
     
     let _sliderTouchX = 0;
     function sliderNav(dir) { const s=document.getElementById('mediaSlider'); if(!s) return; sliderGoto((parseInt(s.dataset.current)+dir+parseInt(s.dataset.total))%parseInt(s.dataset.total)); }
@@ -1081,7 +1099,7 @@
 
     function openDetail(n) {
         const c = document.getElementById('detailContent');
-        const fileUrls = n.file_urls?.filter(Boolean).length ? n.file_urls.filter(Boolean) : (n.file_url ? [n.file_url] : []);
+        const fileUrls = getFileUrls(n);
         const mediaArea = buildMediaSlider(fileUrls);
         let linkArea = '';
         const links = parseLinks(n.link);
