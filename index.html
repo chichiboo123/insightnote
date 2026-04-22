@@ -603,8 +603,11 @@
             if (json.status === "success") {
                 const prevUrls = {};
                 notes.forEach(n => {
-                    const valid = (n.file_urls || []).filter(u => u && !u.startsWith('data:'));
-                    if (valid.length > 1) prevUrls[n.id] = valid;
+                    const allUrls = (n.file_urls || []).filter(Boolean);
+                    if (allUrls.length > 1) {
+                        const driveUrls = allUrls.filter(u => !u.startsWith('data:'));
+                        if (driveUrls.length > 0) prevUrls[n.id] = driveUrls;
+                    }
                 });
                 notes = json.data.map(n => {
                     const serverUrls = Array.isArray(n.file_urls) ? n.file_urls.filter(Boolean) : [];
@@ -896,10 +899,16 @@
             showLoader(true, "서버에 저장 중...");
             try {
                 const existingFileUrls = tempFiles.filter(f => f.existing).map(f => f.data).filter(u => u && !u.startsWith('data:'));
-                const payload = { action: editId ? 'update' : 'create', ...note, files: newFiles, existingFileUrls, key: accessKey };
+                const payload = { action: editId ? 'update' : 'create', ...note, file: newFiles[0] || null, files: newFiles, existingFileUrls, key: accessKey };
                 const res = await fetch(webAppUrl, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain' }, redirect: 'follow' });
                 const json = await res.json();
-                if (json.status === 'success') { showToast('서버 저장 완료'); setTimeout(fetchNotes, 1000); }
+                if (json.status === 'success') {
+                    showToast('서버 저장 완료');
+                    if (Array.isArray(json.file_urls) && json.file_urls.length) {
+                        notes = notes.map(n => n.id === note.id ? {...n, file_url: json.file_urls[0], file_urls: json.file_urls} : n);
+                        saveToCache(notes); refreshUI();
+                    } else { setTimeout(fetchNotes, 1000); }
+                }
             } catch(e) { showToast('서버 저장 중 오류 발생'); }
             finally { showLoader(false); }
         }
