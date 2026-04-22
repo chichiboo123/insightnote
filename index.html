@@ -393,7 +393,11 @@
         <div class="form-group"><label class="form-label">폴더</label><select class="form-input" id="folderSelect"></select></div>
         <div class="form-group"><label class="form-label">제목 / 출처</label><input type="text" class="form-input" id="inputTitle" placeholder="제목"></div>
         <div class="form-group"><label class="form-label">내용</label><textarea class="form-input" id="inputContent" placeholder="내용을 기록하세요"></textarea></div>
-        <div class="form-group"><label class="form-label">링크</label><input type="url" class="form-input" id="inputLink" placeholder="https://..."></div>
+        <div class="form-group">
+            <label class="form-label">링크 (여러 개 추가 가능)</label>
+            <div id="linkInputs"></div>
+            <button type="button" class="folder-manage-btn" style="margin-top:8px;" onclick="addLinkInput()"><i class="ri-link"></i> 링크 추가</button>
+        </div>
         <div class="form-group">
             <label class="form-label">첨부파일</label>
             <label class="file-box" id="fileUploadBtn">
@@ -724,6 +728,41 @@
         }
     }
 
+    function parseLinks(linkField) {
+        if (!linkField) return [];
+        if (Array.isArray(linkField)) return linkField.filter(Boolean);
+        const v = String(linkField).trim();
+        if (!v) return [];
+        if (v.startsWith('[')) {
+            try {
+                const arr = JSON.parse(v);
+                if (Array.isArray(arr)) return arr.map(x => String(x || '').trim()).filter(Boolean);
+            } catch (_) {}
+        }
+        return [v];
+    }
+
+    function serializeLinks(links) {
+        const clean = (links || []).map(x => String(x || '').trim()).filter(Boolean);
+        if (clean.length <= 1) return clean[0] || '';
+        return JSON.stringify(clean);
+    }
+
+    function addLinkInput(value = '') {
+        const wrap = document.createElement('div');
+        wrap.style.display = 'flex';
+        wrap.style.gap = '8px';
+        wrap.style.marginTop = '8px';
+        wrap.innerHTML = `<input type="url" class="form-input link-input" placeholder="https://..." value="${escapeHtml(value)}"><button type="button" class="action-btn del" onclick="this.parentElement.remove()"><i class="ri-close-line"></i></button>`;
+        document.getElementById('linkInputs').appendChild(wrap);
+    }
+
+    function getLinkValues() {
+        return Array.from(document.querySelectorAll('#linkInputs .link-input'))
+            .map(i => i.value.trim())
+            .filter(Boolean);
+    }
+
     function refreshUI() {
         const container = document.getElementById('mainContent');
         if (!container) return;
@@ -759,18 +798,31 @@
                 
                 let preview = '';
                 if(viewState.mode === 'grid') {
-                    if (note.file_url && note.file_url.startsWith('data:image')) {
-                        preview = `<div class="card-preview"><img src="${note.file_url}"></div>`;
-                    } else if (note.file_url) {
-                        const driveId = getGoogleDriveId(note.file_url);
-                        if (driveId) preview = `<div class="card-preview"><img src="https://drive.google.com/thumbnail?sz=w500&id=${driveId}" style="width:100%; height:100%; object-fit:cover;"></div>`;
+                    const files = (note.file_urls || (note.file_url ? [note.file_url] : [])).filter(Boolean);
+                    const imageUrls = files.filter(u => u.startsWith('data:image') || !!getGoogleDriveId(u));
+                    if (imageUrls.length > 1) {
+                        const slides = imageUrls.map(u => {
+                            if (u.startsWith('data:image')) return `<div style="min-width:100%;height:100%;"><img src="${u}" style="width:100%;height:100%;object-fit:cover;"></div>`;
+                            const id = getGoogleDriveId(u);
+                            return `<div style="min-width:100%;height:100%;"><img src="https://drive.google.com/thumbnail?sz=w500&id=${id}" style="width:100%;height:100%;object-fit:cover;"></div>`;
+                        }).join('');
+                        preview = `<div class="card-preview" style="position:relative;overflow:hidden;" data-slider-index="0" data-slider-total="${imageUrls.length}"><div class="mini-slider-track" style="display:flex;width:100%;height:100%;transition:transform .25s ease;">${slides}</div><button onclick="event.stopPropagation(); miniSlide(this,-1)" style="position:absolute;left:6px;top:50%;transform:translateY(-50%);border:none;background:rgba(0,0,0,.35);color:#fff;border-radius:50%;width:28px;height:28px;cursor:pointer;">‹</button><button onclick="event.stopPropagation(); miniSlide(this,1)" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);border:none;background:rgba(0,0,0,.35);color:#fff;border-radius:50%;width:28px;height:28px;cursor:pointer;">›</button></div>`;
+                    } else if (imageUrls.length === 1) {
+                        if (imageUrls[0].startsWith('data:image')) {
+                            preview = `<div class="card-preview"><img src="${imageUrls[0]}"></div>`;
+                        } else {
+                            const driveId = getGoogleDriveId(imageUrls[0]);
+                            if (driveId) preview = `<div class="card-preview"><img src="https://drive.google.com/thumbnail?sz=w500&id=${driveId}" style="width:100%; height:100%; object-fit:cover;"></div>`;
+                        }
                     }
                 }
 
+                const links = parseLinks(note.link);
                 let linkLabel = '';
-                if (note.link) {
-                    const isYT = getYoutubeId(note.link);
-                    linkLabel = `<div class="card-link"><i class="${isYT ? 'ri-youtube-fill' : 'ri-link'}"></i> ${note.link}</div>`;
+                if (links.length) {
+                    const firstLink = links[0];
+                    const isYT = getYoutubeId(firstLink);
+                    linkLabel = `<div class="card-link"><i class="${isYT ? 'ri-youtube-fill' : 'ri-link'}"></i> ${firstLink}${links.length > 1 ? ` 외 ${links.length - 1}개` : ''}</div>`;
                 }
 
                 if (viewState.mode === 'grid') {
@@ -817,11 +869,12 @@
             folder: document.getElementById('folderSelect').value || '기타',
             title: title,
             content: document.getElementById('inputContent').value,
-            link: document.getElementById('inputLink').value.trim() || (existingNote ? existingNote.link : ''),
+            links: getLinkValues(),
             tags: currentTags,
             date: new Date().toLocaleDateString(),
             created_at: existingNote ? existingNote.created_at : now
         };
+        note.link = serializeLinks(note.links);
         const newFiles = tempFiles.filter(f => !f.existing);
         const existingUrls = existingNote ? (existingNote.file_urls || (existingNote.file_url ? [existingNote.file_url] : [])) : [];
         const displayFileUrls = tempFiles.length ? tempFiles.map(f => f.data) : existingUrls;
@@ -890,7 +943,7 @@
             document.getElementById('folderSelect').innerHTML = customFolders.map(f => `<option value="${f}">${f}</option>`).join('') + '<option value="기타">기타</option>';
             document.getElementById('editNoteId').value = "";
             document.querySelectorAll('#writeModal .form-input').forEach(i => i.value = "");
-            tempFiles = []; renderFilePreviews(); currentTags = []; renderTags();
+            tempFiles = []; renderFilePreviews(); currentTags = []; renderTags(); document.getElementById('linkInputs').innerHTML=''; addLinkInput();
         }
     }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; if (id === 'detailModal' && history.state?.detailOpen) history.back(); }
@@ -979,13 +1032,14 @@
             return `<div style="position:relative;flex-shrink:0;">${thumb}<button onclick="removeFile(${i})" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#e74c3c;border:none;color:#fff;cursor:pointer;font-size:0.8rem;padding:0;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 5px rgba(0,0,0,0.2);">×</button></div>`;
         }).join('');
     }
-    function openEditModal(id) { const n=notes.find(x=>x.id===id); if(!n) return; openModal('writeModal'); document.getElementById('modalTitle').innerHTML="✏️ 영감 수정"; document.getElementById('editNoteId').value=id; document.getElementById('inputCategory').value=n.category; document.getElementById('folderSelect').value=n.folder; document.getElementById('inputTitle').value=n.title; document.getElementById('inputContent').value=n.content || ''; document.getElementById('inputLink').value=n.link || ''; currentTags=[...(n.tags||[])]; renderTags(); const existingUrls=n.file_urls||(n.file_url?[n.file_url]:[]); tempFiles=existingUrls.map((url,idx)=>({name:idx===0?'기존 파일':`기존 파일 ${idx+1}`, type:url.startsWith('data:image')?'image/jpeg':'application/octet-stream', data:url, existing:true})); renderFilePreviews(); }
+    function openEditModal(id) { const n=notes.find(x=>x.id===id); if(!n) return; openModal('writeModal'); document.getElementById('modalTitle').innerHTML="✏️ 영감 수정"; document.getElementById('editNoteId').value=id; document.getElementById('inputCategory').value=n.category; document.getElementById('folderSelect').value=n.folder; document.getElementById('inputTitle').value=n.title; document.getElementById('inputContent').value=n.content || ''; document.getElementById('linkInputs').innerHTML=''; const _links=parseLinks(n.link); (_links.length?_links:['']).forEach(l=>addLinkInput(l)); currentTags=[...(n.tags||[])]; renderTags(); const existingUrls=n.file_urls||(n.file_url?[n.file_url]:[]); tempFiles=existingUrls.map((url,idx)=>({name:idx===0?'기존 파일':`기존 파일 ${idx+1}`, type:url.startsWith('data:image')?'image/jpeg':'application/octet-stream', data:url, existing:true})); renderFilePreviews(); }
     
     let _sliderTouchX = 0;
     function sliderNav(dir) { const s=document.getElementById('mediaSlider'); if(!s) return; sliderGoto((parseInt(s.dataset.current)+dir+parseInt(s.dataset.total))%parseInt(s.dataset.total)); }
     function sliderGoto(i) { const s=document.getElementById('mediaSlider'); if(!s) return; s.dataset.current=i; document.getElementById('sliderTrack').style.transform=`translateX(-${i*100}%)`; document.querySelectorAll('#sliderDots span').forEach((d,idx)=>{ d.style.opacity=idx===i?'1':'0.4'; d.style.width=idx===i?'20px':'8px'; }); }
     function sliderTouchStart(e) { _sliderTouchX = e.touches[0].clientX; }
     function sliderTouchEnd(e) { const diff=_sliderTouchX-e.changedTouches[0].clientX; if(Math.abs(diff)>40) sliderNav(diff>0?1:-1); }
+    function miniSlide(btn, dir) { const wrap = btn.closest('[data-slider-total]'); if (!wrap) return; const total = parseInt(wrap.dataset.sliderTotal,10)||1; let cur = parseInt(wrap.dataset.sliderIndex,10)||0; cur = (cur + dir + total) % total; wrap.dataset.sliderIndex = cur; const track = wrap.querySelector('.mini-slider-track'); if (track) track.style.transform = `translateX(-${cur * 100}%)`; }
     function buildMediaSlider(fileUrls) {
         if (!fileUrls.length) return '';
         const renderItem = url => {
@@ -1010,10 +1064,11 @@
         const fileUrls = (n.file_urls || (n.file_url ? [n.file_url] : [])).filter(u => u);
         const mediaArea = buildMediaSlider(fileUrls);
         let linkArea = '';
-        if (n.link) {
-            const ytId = getYoutubeId(n.link);
+        const links = parseLinks(n.link);
+        if (links.length) {
+            const ytId = getYoutubeId(links[0]);
             if (ytId) linkArea = `<div style="margin-top:20px;"><iframe width="100%" height="250" src="https://www.youtube.com/embed/${ytId}" frameborder="0" allowfullscreen style="border-radius:15px;"></iframe></div>`;
-            linkArea += `<a href="${n.link}" target="_blank" style="display:block; padding:15px; background:#f8f9fa; border-radius:12px; margin-top:12px; color:#555; text-decoration:none; font-size:0.9rem; overflow:hidden; text-overflow:ellipsis;"><i class="ri-link"></i> ${n.link}</a>`;
+            linkArea += links.map(u => `<a href="${u}" target="_blank" style="display:block; padding:15px; background:#f8f9fa; border-radius:12px; margin-top:12px; color:#555; text-decoration:none; font-size:0.9rem; overflow:hidden; text-overflow:ellipsis;"><i class="ri-link"></i> ${u}</a>`).join('');
         }
         c.innerHTML = `
             <h2 style="font-weight:800; margin-top:0; line-height:1.4; font-size:1.6rem; color:var(--text);">${n.title}</h2>
