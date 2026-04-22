@@ -602,13 +602,22 @@
 
             if (json.status === "success") {
                 const prevUrls = {};
-                notes.forEach(n => { if (n.file_urls?.length > 1) prevUrls[n.id] = n.file_urls; });
-                notes = json.data.map(n => ({
-                    ...n, id: String(n.id),
-                    tags: typeof n.tags === 'string' ? n.tags.split(',').filter(t=>t) : (n.tags || []),
-                    deleted_at: null,
-                    ...(prevUrls[String(n.id)] ? { file_urls: prevUrls[String(n.id)] } : {})
-                }));
+                notes.forEach(n => {
+                    const valid = (n.file_urls || []).filter(u => u && !u.startsWith('data:'));
+                    if (valid.length > 1) prevUrls[n.id] = valid;
+                });
+                notes = json.data.map(n => {
+                    const serverUrls = Array.isArray(n.file_urls) ? n.file_urls.filter(Boolean) : [];
+                    const fallback = prevUrls[String(n.id)] || (n.file_url ? [n.file_url] : []);
+                    const fileUrls = serverUrls.length ? serverUrls : fallback;
+                    return {
+                        ...n, id: String(n.id),
+                        tags: typeof n.tags === 'string' ? n.tags.split(',').filter(t=>t) : (n.tags || []),
+                        deleted_at: null,
+                        file_url: fileUrls[0] || n.file_url || '',
+                        file_urls: fileUrls
+                    };
+                });
                 // 서버 폴더 동기화
                 if (Array.isArray(json.folders) && json.folders.length > 0) {
                     // 서버에 저장된 폴더가 있으면 서버 기준으로 업데이트
@@ -798,7 +807,7 @@
                 
                 let preview = '';
                 if(viewState.mode === 'grid') {
-                    const files = (note.file_urls || (note.file_url ? [note.file_url] : [])).filter(Boolean);
+                    const files = (note.file_urls?.filter(Boolean).length ? note.file_urls.filter(Boolean) : (note.file_url ? [note.file_url] : []));
                     const imageUrls = files.filter(u => u.startsWith('data:image') || !!getGoogleDriveId(u));
                     if (imageUrls.length > 1) {
                         const slides = imageUrls.map(u => {
@@ -806,7 +815,8 @@
                             const id = getGoogleDriveId(u);
                             return `<div style="min-width:100%;height:100%;"><img src="https://drive.google.com/thumbnail?sz=w500&id=${id}" style="width:100%;height:100%;object-fit:cover;"></div>`;
                         }).join('');
-                        preview = `<div class="card-preview" style="position:relative;overflow:hidden;" data-slider-index="0" data-slider-total="${imageUrls.length}"><div class="mini-slider-track" style="display:flex;width:100%;height:100%;transition:transform .25s ease;">${slides}</div><button onclick="event.stopPropagation(); miniSlide(this,-1)" style="position:absolute;left:6px;top:50%;transform:translateY(-50%);border:none;background:rgba(0,0,0,.35);color:#fff;border-radius:50%;width:28px;height:28px;cursor:pointer;">‹</button><button onclick="event.stopPropagation(); miniSlide(this,1)" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);border:none;background:rgba(0,0,0,.35);color:#fff;border-radius:50%;width:28px;height:28px;cursor:pointer;">›</button></div>`;
+                        const miniDots = imageUrls.map((_,i) => `<span style="display:inline-block;height:5px;width:${i===0?'12px':'5px'};border-radius:3px;background:#fff;opacity:${i===0?'0.9':'0.5'};margin:0 2px;transition:all 0.2s;vertical-align:middle;"></span>`).join('');
+                        preview = `<div class="card-preview" style="position:relative;overflow:hidden;" data-slider-index="0" data-slider-total="${imageUrls.length}"><div class="mini-slider-track" style="display:flex;width:100%;height:100%;transition:transform .25s ease;">${slides}</div><button onclick="event.stopPropagation(); miniSlide(this,-1)" style="position:absolute;left:6px;top:50%;transform:translateY(-50%);border:none;background:rgba(0,0,0,.4);color:#fff;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;line-height:1;z-index:2;">‹</button><button onclick="event.stopPropagation(); miniSlide(this,1)" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);border:none;background:rgba(0,0,0,.4);color:#fff;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;line-height:1;z-index:2;">›</button><div class="mini-slider-dots" style="position:absolute;bottom:6px;left:0;right:0;text-align:center;z-index:2;">${miniDots}</div></div>`;
                     } else if (imageUrls.length === 1) {
                         if (imageUrls[0].startsWith('data:image')) {
                             preview = `<div class="card-preview"><img src="${imageUrls[0]}"></div>`;
@@ -885,7 +895,8 @@
         if (!isOfflineMode && webAppUrl) {
             showLoader(true, "서버에 저장 중...");
             try {
-                const payload = { action: editId ? 'update' : 'create', ...note, file: newFiles[0] || null, files: newFiles, key: accessKey };
+                const existingFileUrls = tempFiles.filter(f => f.existing).map(f => f.data).filter(u => u && !u.startsWith('data:'));
+                const payload = { action: editId ? 'update' : 'create', ...note, files: newFiles, existingFileUrls, key: accessKey };
                 const res = await fetch(webAppUrl, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain' }, redirect: 'follow' });
                 const json = await res.json();
                 if (json.status === 'success') { showToast('서버 저장 완료'); setTimeout(fetchNotes, 1000); }
@@ -1039,7 +1050,7 @@
     function sliderGoto(i) { const s=document.getElementById('mediaSlider'); if(!s) return; s.dataset.current=i; document.getElementById('sliderTrack').style.transform=`translateX(-${i*100}%)`; document.querySelectorAll('#sliderDots span').forEach((d,idx)=>{ d.style.opacity=idx===i?'1':'0.4'; d.style.width=idx===i?'20px':'8px'; }); }
     function sliderTouchStart(e) { _sliderTouchX = e.touches[0].clientX; }
     function sliderTouchEnd(e) { const diff=_sliderTouchX-e.changedTouches[0].clientX; if(Math.abs(diff)>40) sliderNav(diff>0?1:-1); }
-    function miniSlide(btn, dir) { const wrap = btn.closest('[data-slider-total]'); if (!wrap) return; const total = parseInt(wrap.dataset.sliderTotal,10)||1; let cur = parseInt(wrap.dataset.sliderIndex,10)||0; cur = (cur + dir + total) % total; wrap.dataset.sliderIndex = cur; const track = wrap.querySelector('.mini-slider-track'); if (track) track.style.transform = `translateX(-${cur * 100}%)`; }
+    function miniSlide(btn, dir) { const wrap = btn.closest('[data-slider-total]'); if (!wrap) return; const total = parseInt(wrap.dataset.sliderTotal,10)||1; let cur = parseInt(wrap.dataset.sliderIndex,10)||0; cur = (cur + dir + total) % total; wrap.dataset.sliderIndex = cur; const track = wrap.querySelector('.mini-slider-track'); if (track) track.style.transform = `translateX(-${cur * 100}%)`; wrap.querySelectorAll('.mini-slider-dots span').forEach((d,i) => { d.style.opacity = i===cur ? '0.9' : '0.5'; d.style.width = i===cur ? '12px' : '5px'; }); }
     function buildMediaSlider(fileUrls) {
         if (!fileUrls.length) return '';
         const renderItem = url => {
@@ -1061,7 +1072,7 @@
 
     function openDetail(n) {
         const c = document.getElementById('detailContent');
-        const fileUrls = (n.file_urls || (n.file_url ? [n.file_url] : [])).filter(u => u);
+        const fileUrls = n.file_urls?.filter(Boolean).length ? n.file_urls.filter(Boolean) : (n.file_url ? [n.file_url] : []);
         const mediaArea = buildMediaSlider(fileUrls);
         let linkArea = '';
         const links = parseLinks(n.link);
