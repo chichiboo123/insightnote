@@ -561,6 +561,8 @@
             updateStatusUI('offline');
             loadFromCache(); 
         } else if (webAppUrl && accessKey) {
+            // 온라인 모드에서도 캐시를 먼저 로드해 다중 첨부 미리보기를 보존한 뒤 서버와 병합
+            loadFromCache();
             fetchNotes(); 
         } else {
             updateStatusUI('error', '설정 필요');
@@ -667,13 +669,7 @@
 
     function saveToCache(data) {
         try {
-            const cacheData = data.map(n => {
-                const s = { ...n };
-                if (s.file_url?.startsWith('data:')) s.file_url = '';
-                if (s.file_urls) s.file_urls = s.file_urls.map(u => u?.startsWith('data:') ? '' : u);
-                return s;
-            });
-            localStorage.setItem('notes_cache', JSON.stringify(cacheData));
+            localStorage.setItem('notes_cache', JSON.stringify(data));
         } catch (e) { console.warn("Cache Full"); }
     }
 
@@ -929,7 +925,10 @@
                                 console.warn('누락 파일 재업로드 실패:', uploadErr);
                             }
                         }
-                        const displayUrls = finalServerUrls.length ? finalServerUrls : displayFileUrls;
+                        const hasCompleteServerUrls = finalServerUrls.length >= expectedServerCount;
+                        const displayUrls = hasCompleteServerUrls
+                            ? finalServerUrls
+                            : uniqNonEmpty([...(finalServerUrls || []), ...(displayFileUrls || [])]);
                         notes = notes.map(n => n.id === note.id ? {...n, file_url: displayUrls[0], file_urls: displayUrls} : n);
                         saveToCache(notes); refreshUI();
                     } else { setTimeout(() => fetchNotes({ silent: true }), 1000); }
