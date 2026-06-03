@@ -209,7 +209,7 @@ function handleRead() {
 
   // 헤더만 있거나 완전히 비어있을 때
   if (lastRow <= 1) {
-    return responseJSON({ status: 'success', data: [], folders: getStoredFolders() });
+    return responseJSON({ status: 'success', data: [], folders: getStoredFolders(), version: VERSION });
   }
 
   const rows  = sheet.getRange(2, 1, lastRow - 1, SHEET_HEADERS.length).getValues();
@@ -238,7 +238,7 @@ function handleRead() {
     });
 
   Logger.log('읽기 완료 — 메모 수: ' + notes.length);
-  return responseJSON({ status: 'success', data: notes, folders: getStoredFolders() });
+  return responseJSON({ status: 'success', data: notes, folders: getStoredFolders(), version: VERSION });
 }
 
 /** 새 메모 생성 */
@@ -267,7 +267,7 @@ function handleCreate(data) {
     ]);
 
     Logger.log('생성 완료 — ID: ' + data.id + ' / 파일 ' + uploadedUrls.length + '개');
-    return responseJSON({ status: 'success', file_url: uploadedUrls[0] || '', file_urls: uploadedUrls });
+    return responseJSON({ status: 'success', file_url: uploadedUrls[0] || '', file_urls: uploadedUrls, version: VERSION });
   } finally {
     lock.releaseLock();
   }
@@ -328,7 +328,7 @@ function handleUpdate(data) {
     ]]);
 
     Logger.log('수정 완료 — ID: ' + targetId + ' (행: ' + rowIndex + ') / 파일 ' + resultUrls.length + '개');
-    return responseJSON({ status: 'success', file_url: resultUrls[0] || '', file_urls: resultUrls });
+    return responseJSON({ status: 'success', file_url: resultUrls[0] || '', file_urls: resultUrls, version: VERSION });
   } finally {
     lock.releaseLock();
   }

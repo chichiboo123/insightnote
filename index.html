@@ -486,8 +486,24 @@
         return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
     }
 
+    // 앱이 기대하는 백엔드(code.gs) 버전. 서버 응답의 version과 다르면 '오래된 배포'에 연결된 것입니다.
+    const EXPECTED_SERVER_VERSION = '2026-06-03-multifile-v3';
+    let _serverVersionWarned = false;
+    function checkServerVersion(json) {
+        if (!json || !json.version) {
+            console.warn('[버전확인] 서버가 version을 반환하지 않습니다 → 구버전 code.gs가 배포되어 있습니다.');
+            if (!_serverVersionWarned) { _serverVersionWarned = true; showToast('⚠️ 서버(코드)가 구버전입니다. 웹앱을 새 버전으로 재배포하세요.'); }
+            return;
+        }
+        console.log('[버전확인] 서버 version =', json.version, '/ 앱 기대 version =', EXPECTED_SERVER_VERSION);
+        if (json.version !== EXPECTED_SERVER_VERSION && !_serverVersionWarned) {
+            _serverVersionWarned = true;
+            showToast('⚠️ 앱이 연결된 서버 버전(' + json.version + ')이 오래됐습니다. 배포 URL을 확인하세요.');
+        }
+    }
+
     // --- 전역 상태 ---
-    let webAppUrl = localStorage.getItem('inspirationNote_Url') || ""; 
+    let webAppUrl = localStorage.getItem('inspirationNote_Url') || "";
     let accessKey = localStorage.getItem('inspirationNote_Key') || "";
     let isOfflineMode = localStorage.getItem('inspirationNote_Offline') === 'true'; 
     let notes = [];
@@ -612,6 +628,7 @@
             const params = new URLSearchParams({ action: 'read', key: accessKey, t: Date.now() });
             const res = await fetch(`${webAppUrl}?${params.toString()}`, { redirect: "follow" });
             const json = await res.json();
+            checkServerVersion(json);
 
             if (json.status === "success") {
                 const prevUrls = {};
@@ -933,6 +950,7 @@
                 const payload = { action: editId ? 'update' : 'create', ...note, file: newFiles[0] || null, files: newFiles, existingFileUrls, key: accessKey };
                 const res = await fetch(webAppUrl, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain' }, redirect: 'follow' });
                 const json = await res.json();
+                checkServerVersion(json);
                 if (json.status === 'success') {
                     showToast('서버 저장 완료');
                     if (Array.isArray(json.file_urls) && json.file_urls.length) {
