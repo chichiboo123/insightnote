@@ -11,6 +11,10 @@ const FOLDER_NAME = '영감노트_파일';
 // 비밀번호 ← 여기만 수정하세요
 const ACCESS_KEY = '2865';
 
+// 배포 버전 확인용 — 웹앱 URL을 브라우저로 열면 이 값이 보입니다.
+// 새 코드가 실제로 배포되었는지 확인할 때 사용하세요.
+const VERSION = '2026-06-03-multifile-v3';
+
 // 컬럼 순서 — 스프레드시트 실제 순서와 일치
 // id | category | folder | title | content | link | file_url | tags | date | created_at | file_urls
 //  · file_url  : 첫 번째 파일 URL (구버전 호환용 단일 값)
@@ -156,8 +160,8 @@ function doGet(e) {
     return handleRead();
   }
 
-  // 기본 상태 확인
-  return responseJSON({ status: 'success', message: '영감노트 GAS 서버 정상 작동 중' });
+  // 기본 상태 확인 (배포 버전 확인용)
+  return responseJSON({ status: 'success', message: '영감노트 GAS 서버 정상 작동 중', version: VERSION });
 }
 
 /** POST 요청 — 모든 앱 요청 처리 */
