@@ -12,10 +12,13 @@ const FOLDER_NAME = '영감노트_파일';
 const ACCESS_KEY = '2865';
 
 // 컬럼 순서 — 스프레드시트 실제 순서와 일치
-// id | category | folder | title | content | link | file_url | tags | date | created_at
+// id | category | folder | title | content | link | file_url | tags | date | created_at | file_urls
+//  · file_url  : 첫 번째 파일 URL (구버전 호환용 단일 값)
+//  · file_urls : 첨부된 모든 파일 URL을 JSON 배열로 저장 (여러 이미지 보존)
+// 기존 시트에 file_urls 컬럼이 없어도 getSheet()에서 자동으로 추가되며, 기존 데이터는 유지됩니다.
 const SHEET_HEADERS = [
   'id', 'category', 'folder', 'title', 'content',
-  'link', 'file_url', 'tags', 'date', 'created_at'
+  'link', 'file_url', 'tags', 'date', 'created_at', 'file_urls'
 ];
 
 
@@ -46,6 +49,15 @@ function getSheet() {
     sheet.appendRow(SHEET_HEADERS);
     sheet.getRange(1, 1, 1, SHEET_HEADERS.length).setFontWeight('bold');
     Logger.log('헤더 자동 생성 완료');
+  } else {
+    // 헤더 마이그레이션: 누락된 컬럼(예: file_urls)을 데이터 손실 없이 자동 추가
+    const headerRow = sheet.getRange(1, 1, 1, SHEET_HEADERS.length).getValues()[0];
+    for (let c = 0; c < SHEET_HEADERS.length; c++) {
+      if (String(headerRow[c] || '') !== SHEET_HEADERS[c]) {
+        sheet.getRange(1, c + 1).setValue(SHEET_HEADERS[c]).setFontWeight('bold');
+        Logger.log('헤더 컬럼 보정: ' + SHEET_HEADERS[c] + ' (열 ' + (c + 1) + ')');
+      }
+    }
   }
 
   return sheet;
@@ -55,6 +67,42 @@ function getSheet() {
 function getOrCreateFolder() {
   const folders = DriveApp.getFoldersByName(FOLDER_NAME);
   return folders.hasNext() ? folders.next() : DriveApp.createFolder(FOLDER_NAME);
+}
+
+/**
+ * URL 배열 → 시트에 저장할 file_url(첫 URL)과 file_urls(JSON 배열) 값으로 변환합니다.
+ * 여러 파일을 모두 보존하기 위해 항상 file_urls 컬럼에 전체 목록을 저장합니다.
+ */
+function buildFileFields(urls) {
+  const clean = (urls || []).filter(function(u) { return !!u; });
+  return {
+    file_url:  clean[0] || '',
+    file_urls: clean.length ? JSON.stringify(clean) : ''
+  };
+}
+
+/**
+ * 시트 셀 값(file_urls 컬럼 우선, 없으면 구버전 file_url 컬럼)에서 URL 배열을 복원합니다.
+ * 구버전 데이터(file_url 에 단일 URL 또는 JSON 배열 저장)도 호환합니다.
+ */
+function parseFileUrls(fileUrlsCell, fileUrlCell) {
+  const rawList = String(fileUrlsCell || '');
+  if (rawList) {
+    try {
+      const p = JSON.parse(rawList);
+      if (Array.isArray(p)) return p.filter(function(u) { return !!u; });
+    } catch (e) {}
+  }
+  // 구버전 호환: file_url 컬럼에 단일 URL 또는 JSON 배열이 저장된 경우
+  const legacy = String(fileUrlCell || '');
+  if (!legacy) return [];
+  if (legacy.charAt(0) === '[') {
+    try {
+      const p2 = JSON.parse(legacy);
+      if (Array.isArray(p2)) return p2.filter(function(u) { return !!u; });
+    } catch (e) {}
+  }
+  return [legacy];
 }
 
 
@@ -129,18 +177,11 @@ function handleRead() {
     // ID가 없는 빈 행 제거
     .filter(row => row[0] !== '' && row[0] !== null && row[0] !== undefined)
     .map(row => {
-      // 컬럼 순서: id(0) category(1) folder(2) title(3) content(4) link(5) file_url(6) tags(7) date(8) created_at(9)
+      // 컬럼 순서: id(0) category(1) folder(2) title(3) content(4) link(5) file_url(6) tags(7) date(8) created_at(9) file_urls(10)
       let tags = [];
       try { tags = row[7] ? JSON.parse(row[7]) : []; } catch (e) { tags = []; }
 
-      var rawFileUrl = String(row[6] || '');
-      var parsedUrls = [];
-      if (rawFileUrl) {
-        try {
-          var parsed = JSON.parse(rawFileUrl);
-          parsedUrls = Array.isArray(parsed) ? parsed.filter(function(u) { return !!u; }) : [rawFileUrl];
-        } catch(e) { parsedUrls = [rawFileUrl]; }
-      }
+      var parsedUrls = parseFileUrls(row[10], row[6]);
       return {
         id:         String(row[0] || ''),
         category:   String(row[1] || ''),
@@ -148,7 +189,7 @@ function handleRead() {
         title:      String(row[3] || ''),
         content:    String(row[4] || ''),
         link:       String(row[5] || ''),
-        file_url:   parsedUrls[0] || rawFileUrl || '',
+        file_url:   parsedUrls[0] || '',
         file_urls:  parsedUrls,
         tags:       tags,
         date:       String(row[8] || ''),
@@ -168,9 +209,9 @@ function handleCreate(data) {
     const sheet    = getSheet();
     var filesArr   = Array.isArray(data.files) ? data.files : (data.file ? [data.file] : []);
     var uploadedUrls = filesArr.map(function(f) { return uploadFileIfPresent(f); }).filter(function(u) { return !!u; });
-    var fileUrl    = uploadedUrls.length > 1 ? JSON.stringify(uploadedUrls) : (uploadedUrls[0] || '');
+    var ff         = buildFileFields(uploadedUrls);
 
-    // 컬럼 순서: id | category | folder | title | content | link | file_url | tags | date | created_at
+    // 컬럼 순서: id | category | folder | title | content | link | file_url | tags | date | created_at | file_urls
     sheet.appendRow([
       String(data.id         || String(Date.now())),
       String(data.category   || ''),
@@ -178,13 +219,14 @@ function handleCreate(data) {
       String(data.title      || ''),
       String(data.content    || ''),
       String(data.link       || ''),
-      fileUrl,
+      ff.file_url,
       JSON.stringify(data.tags || []),
       String(data.date       || ''),
-      Number(data.created_at || Date.now())
+      Number(data.created_at || Date.now()),
+      ff.file_urls
     ]);
 
-    Logger.log('생성 완료 — ID: ' + data.id);
+    Logger.log('생성 완료 — ID: ' + data.id + ' / 파일 ' + uploadedUrls.length + '개');
     return responseJSON({ status: 'success', file_url: uploadedUrls[0] || '', file_urls: uploadedUrls });
   } finally {
     lock.releaseLock();
@@ -214,21 +256,23 @@ function handleUpdate(data) {
       return responseJSON({ status: 'error', message: '해당 ID의 메모를 찾을 수 없습니다.' });
     }
 
-    // 파일: existingFileUrls + 새 파일 업로드 → 복수 URL JSON 저장
-    var fileUrl;
+    // 파일: existingFileUrls + 새 파일 업로드 → 전체 목록을 file_urls(JSON)로 저장
+    var resultUrls;
     if (data.existingFileUrls !== undefined) {
       var existingToKeep = (data.existingFileUrls || []).filter(function(u) { return !!u; });
       var filesArr = Array.isArray(data.files) ? data.files : [];
       var newUrls  = filesArr.map(function(f) { return uploadFileIfPresent(f); }).filter(function(u) { return !!u; });
-      var allUrls  = existingToKeep.concat(newUrls);
-      fileUrl = allUrls.length > 1 ? JSON.stringify(allUrls) : (allUrls[0] || '');
+      resultUrls   = existingToKeep.concat(newUrls);
     } else if (data.file && data.file.data) {
-      fileUrl = uploadFileIfPresent(data.file);
+      var single = uploadFileIfPresent(data.file);
+      resultUrls = single ? [single] : [];
     } else {
-      fileUrl = String(sheet.getRange(rowIndex, 7).getValue() || '');
+      // 파일 변경 정보 없음: 기존 셀 값을 그대로 유지
+      resultUrls = parseFileUrls(sheet.getRange(rowIndex, 11).getValue(), sheet.getRange(rowIndex, 7).getValue());
     }
+    var ff = buildFileFields(resultUrls);
 
-    // 컬럼 순서: id | category | folder | title | content | link | file_url | tags | date | created_at
+    // 컬럼 순서: id | category | folder | title | content | link | file_url | tags | date | created_at | file_urls
     sheet.getRange(rowIndex, 1, 1, SHEET_HEADERS.length).setValues([[
       String(data.id         || ''),
       String(data.category   || ''),
@@ -236,18 +280,14 @@ function handleUpdate(data) {
       String(data.title      || ''),
       String(data.content    || ''),
       String(data.link       || ''),
-      fileUrl,
+      ff.file_url,
       JSON.stringify(data.tags || []),
       String(data.date       || ''),
-      Number(data.created_at || 0)
+      Number(data.created_at || 0),
+      ff.file_urls
     ]]);
 
-    Logger.log('수정 완료 — ID: ' + targetId + ' (행: ' + rowIndex + ')');
-    var resultUrls;
-    try {
-      var rp = JSON.parse(fileUrl);
-      resultUrls = Array.isArray(rp) ? rp.filter(function(u) { return !!u; }) : (fileUrl ? [fileUrl] : []);
-    } catch(e) { resultUrls = fileUrl ? [fileUrl] : []; }
+    Logger.log('수정 완료 — ID: ' + targetId + ' (행: ' + rowIndex + ') / 파일 ' + resultUrls.length + '개');
     return responseJSON({ status: 'success', file_url: resultUrls[0] || '', file_urls: resultUrls });
   } finally {
     lock.releaseLock();
