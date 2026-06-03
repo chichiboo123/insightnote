@@ -171,7 +171,14 @@
 
         /* 모달 시스템 */
         .modal-wrap { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
-        .modal-box { background: var(--card); width: 90%; max-width: 480px; border-radius: 24px; padding: 30px; max-height: 90vh; overflow-y: auto; animation: popIn 0.2s ease; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
+        .modal-box { background: var(--card); width: 92%; max-width: 600px; border-radius: 24px; padding: 30px; max-height: 90vh; overflow-y: auto; animation: popIn 0.2s ease; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
+
+        /* UI와 어울리는 부드러운 스크롤바 (모달 / 내용 입력창) */
+        .modal-box, textarea.form-input { scrollbar-width: thin; scrollbar-color: var(--sub) transparent; }
+        .modal-box::-webkit-scrollbar, textarea.form-input::-webkit-scrollbar { width: 8px; height: 8px; }
+        .modal-box::-webkit-scrollbar-track, textarea.form-input::-webkit-scrollbar-track { background: transparent; margin: 6px 0; }
+        .modal-box::-webkit-scrollbar-thumb, textarea.form-input::-webkit-scrollbar-thumb { background: var(--sub); border-radius: 10px; border: 2px solid transparent; background-clip: padding-box; }
+        .modal-box:hover::-webkit-scrollbar-thumb, textarea.form-input:hover::-webkit-scrollbar-thumb { background: var(--main); background-clip: padding-box; }
         .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
         .modal-title { font-size: 1.3rem; font-weight: 800; display: flex; align-items: center; gap: 10px; color: var(--text); }
         .close-btn { background: none; border: none; font-size: 1.6rem; color: #999; cursor: pointer; }
@@ -180,7 +187,8 @@
         
         .form-input { width: 100%; padding: 14px; border-radius: 14px; border: 1px solid var(--sub); background: var(--bg); font-size: 1rem; outline: none; font-family: var(--font-main); color: var(--text); transition: all 0.2s; }
         .form-input:focus { border-color: var(--main); background: #fff; box-shadow: 0 0 0 3px rgba(0,0,0,0.03); }
-        textarea.form-input { height: 120px; resize: none; line-height: 1.5; }
+        /* 내용 입력창: 작성한 만큼 세로로 자동 확장 (모바일에서는 화면 절반까지만 늘어나고 그 이상은 내부 스크롤) */
+        textarea.form-input { min-height: 120px; max-height: 50vh; resize: none; line-height: 1.6; overflow-y: auto; }
         .full-btn { width: 100%; padding: 16px; border-radius: 16px; background: var(--main); color: white; border: none; font-size: 1.1rem; font-weight: 700; cursor: pointer; margin-top: 10px; transition: var(--trans); }
         #folderDeleteChoiceModal { z-index: 2100; }
 
@@ -392,7 +400,7 @@
         </div>
         <div class="form-group"><label class="form-label">폴더</label><select class="form-input" id="folderSelect"></select></div>
         <div class="form-group"><label class="form-label">제목 / 출처</label><input type="text" class="form-input" id="inputTitle" placeholder="제목"></div>
-        <div class="form-group"><label class="form-label">내용</label><textarea class="form-input" id="inputContent" placeholder="내용을 기록하세요"></textarea></div>
+        <div class="form-group"><label class="form-label">내용</label><textarea class="form-input" id="inputContent" placeholder="내용을 기록하세요" oninput="autoGrow(this)"></textarea></div>
         <div class="form-group">
             <label class="form-label">링크 (여러 개 추가 가능)</label>
             <div id="linkInputs"></div>
@@ -987,7 +995,7 @@
             document.getElementById('folderSelect').innerHTML = customFolders.map(f => `<option value="${f}">${f}</option>`).join('') + '<option value="기타">기타</option>';
             document.getElementById('editNoteId').value = "";
             document.querySelectorAll('#writeModal .form-input').forEach(i => i.value = "");
-            tempFiles = []; renderFilePreviews(); currentTags = []; renderTags(); document.getElementById('linkInputs').innerHTML=''; addLinkInput();
+            tempFiles = []; renderFilePreviews(); currentTags = []; renderTags(); document.getElementById('linkInputs').innerHTML=''; addLinkInput(); autoGrow(document.getElementById('inputContent'));
         }
     }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; if (id === 'detailModal' && history.state?.detailOpen) history.back(); }
@@ -998,6 +1006,13 @@
     function switchSettingTab(t) { document.querySelectorAll('.setting-tab').forEach(x=>x.classList.remove('active')); document.querySelectorAll('.setting-content').forEach(x=>x.classList.remove('active')); document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.add('active'); document.getElementById('content'+t.charAt(0).toUpperCase()+t.slice(1)).classList.add('active'); }
     function getGoogleDriveId(u) { if(!u) return null; let m = u.match(/[?&]id=([^&]+)/); if(m) return m[1]; m = u.match(/\/d\/([^/]+)/); if(m) return m[1]; return null; }
     function uniqNonEmpty(arr) { return [...new Set((arr || []).filter(Boolean))]; }
+    // 내용 입력창 높이를 내용에 맞춰 자동 조절 (max-height 초과 시 내부 스크롤)
+    function autoGrow(el) {
+        if (!el) return;
+        el.style.height = 'auto';
+        const max = Math.round(window.innerHeight * 0.5);
+        el.style.height = Math.min(el.scrollHeight, max) + 'px';
+    }
     function getFileUrls(note) {
         if (note.file_urls?.filter(Boolean).length) return note.file_urls.filter(Boolean);
         const raw = String(note.file_url || '');
@@ -1110,7 +1125,7 @@
             return `<div style="position:relative;flex-shrink:0;">${thumb}<button onclick="removeFile(${i})" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#e74c3c;border:none;color:#fff;cursor:pointer;font-size:0.8rem;padding:0;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 5px rgba(0,0,0,0.2);">×</button></div>`;
         }).join('');
     }
-    function openEditModal(id) { const n=notes.find(x=>x.id===id); if(!n) return; openModal('writeModal'); document.getElementById('modalTitle').innerHTML="✏️ 영감 수정"; document.getElementById('editNoteId').value=id; document.getElementById('inputCategory').value=n.category; document.getElementById('folderSelect').value=n.folder; document.getElementById('inputTitle').value=n.title; document.getElementById('inputContent').value=n.content || ''; document.getElementById('linkInputs').innerHTML=''; const _links=parseLinks(n.link); (_links.length?_links:['']).forEach(l=>addLinkInput(l)); currentTags=[...(n.tags||[])]; renderTags(); const existingUrls=getFileUrls(n); tempFiles=existingUrls.map((url,idx)=>({name:idx===0?'기존 파일':`기존 파일 ${idx+1}`, type:url.startsWith('data:image')?'image/jpeg':'application/octet-stream', data:url, existing:true})); renderFilePreviews(); }
+    function openEditModal(id) { const n=notes.find(x=>x.id===id); if(!n) return; openModal('writeModal'); document.getElementById('modalTitle').innerHTML="✏️ 영감 수정"; document.getElementById('editNoteId').value=id; document.getElementById('inputCategory').value=n.category; document.getElementById('folderSelect').value=n.folder; document.getElementById('inputTitle').value=n.title; document.getElementById('inputContent').value=n.content || ''; document.getElementById('linkInputs').innerHTML=''; const _links=parseLinks(n.link); (_links.length?_links:['']).forEach(l=>addLinkInput(l)); currentTags=[...(n.tags||[])]; renderTags(); const existingUrls=getFileUrls(n); tempFiles=existingUrls.map((url,idx)=>({name:idx===0?'기존 파일':`기존 파일 ${idx+1}`, type:url.startsWith('data:image')?'image/jpeg':'application/octet-stream', data:url, existing:true})); renderFilePreviews(); autoGrow(document.getElementById('inputContent')); }
     
     let _sliderTouchX = 0;
     function sliderNav(dir) { const s=document.getElementById('mediaSlider'); if(!s) return; sliderGoto((parseInt(s.dataset.current)+dir+parseInt(s.dataset.total))%parseInt(s.dataset.total)); }
