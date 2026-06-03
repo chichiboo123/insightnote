@@ -63,6 +63,42 @@ function getSheet() {
   return sheet;
 }
 
+/**
+ * ★ 수동 실행용 ★
+ * Apps Script 편집기 상단의 함수 선택 메뉴에서 'setupSheet'을 고른 뒤 [실행]을 누르세요.
+ * 1) file_urls 컬럼(헤더)이 없으면 생성하고
+ * 2) 기존 행의 file_url 값을 새 구조(file_url=첫 URL, file_urls=전체 JSON)로 백필합니다.
+ * 배포 여부와 상관없이, 저장된 최신 코드로 즉시 시트를 정비합니다. 기존 데이터는 보존됩니다.
+ */
+function setupSheet() {
+  const sheet   = getSheet(); // 헤더 보정(file_urls 컬럼 생성) 포함
+  const lastRow = sheet.getLastRow();
+  let migrated  = 0;
+
+  if (lastRow > 1) {
+    const range  = sheet.getRange(2, 1, lastRow - 1, SHEET_HEADERS.length);
+    const values = range.getValues();
+    for (let i = 0; i < values.length; i++) {
+      const row          = values[i];
+      const existingList = String(row[10] || ''); // file_urls 컬럼
+      const legacy       = String(row[6]  || ''); // file_url 컬럼
+      // file_urls가 비어 있고 기존 file_url에 값이 있을 때만 백필 (이미 정비된 행은 건너뜀)
+      if (!existingList && legacy) {
+        const urls = parseFileUrls('', legacy);
+        const ff   = buildFileFields(urls);
+        row[6]  = ff.file_url;
+        row[10] = ff.file_urls;
+        migrated++;
+      }
+    }
+    range.setValues(values);
+  }
+
+  const msg = 'setupSheet 완료 — file_urls 컬럼 확인/생성, 기존 데이터 ' + migrated + '행 정비';
+  Logger.log(msg);
+  return msg;
+}
+
 /** Drive 폴더를 가져오거나 없으면 생성합니다 */
 function getOrCreateFolder() {
   const folders = DriveApp.getFoldersByName(FOLDER_NAME);
